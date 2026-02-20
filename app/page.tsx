@@ -86,6 +86,7 @@ export default function Index() {
               "Support for PostgreSQL 12-18",
               "Backup compression and AES-256-GCM encryption",
               "Support for PostgreSQL, MySQL, MariaDB and MongoDB",
+              "Retention policies: time period, count, GFS and size limits",
             ],
             screenshot: "https://databasus.com/images/index/dashboard.png",
             softwareVersion: "latest",
@@ -132,7 +133,7 @@ export default function Index() {
                 name: "What is Databasus and why should I use it instead of hand-rolled scripts?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Databasus is an Apache 2.0 licensed, self-hosted service backing up PostgreSQL, v13 to v18. It differs from shell scripts in that it has a frontend for scheduling tasks, compressing and storing archives on multiple targets (local disk, S3, Google Drive, Dropbox, SFTP, rclone, etc.) and notifying your team when tasks finish or fail — all without hand-rolled code",
+                  text: "Databasus is an Apache 2.0 licensed, self-hosted service backing up PostgreSQL, v13 to v18. It differs from shell scripts in that it has a frontend for scheduling tasks, compressing and storing archives on multiple targets (local disk, S3, Google Drive, Dropbox, SFTP, rclone, etc.), configuring retention policies to automatically prune old backups and notifying your team when tasks finish or fail — all without hand-rolled code",
                 },
               },
               {
@@ -148,7 +149,7 @@ export default function Index() {
                 name: "What backup schedules can I schedule?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "You can choose from hourly, daily, weekly, monthly or cron cycles and even choose an exact run time (such as 04:00 when it's late night). Weekly schedules enable you to choose a particular weekday, while monthly schedules enable you to choose a particular calendar day, giving you very fine-grained control of maintenance windows.",
+                  text: "You can choose from hourly, daily, weekly, monthly or cron cycles and even choose an exact run time (such as 04:00 when it's late night). Weekly schedules enable you to choose a particular weekday, while monthly schedules enable you to choose a particular calendar day, giving you very fine-grained control of maintenance windows. Retention policies let you automatically clean up old backups by time period, count, size limit or GFS (Grandfather-Father-Son), the latter being popular for enterprise compliance.",
                 },
               },
               {
@@ -1243,7 +1244,7 @@ export default function Index() {
             <FaqItem
               number="1"
               question="What is Databasus and why should I use it instead of hand-rolled scripts?"
-              answer="Databasus is an Apache 2.0 licensed, self-hosted service backing up databases. It differs from shell scripts in that it has a frontend for scheduling tasks, compressing and storing archives on multiple targets (local disk, S3, Google Drive, NAS, Dropbox, SFTP, rclone, etc.) and notifying your team when tasks finish or fail — all without hand-rolled code"
+              answer="Databasus is an Apache 2.0 licensed, self-hosted service backing up databases. It differs from shell scripts in that it has a frontend for scheduling tasks, compressing and storing archives on multiple targets (local disk, S3, Google Drive, NAS, Dropbox, SFTP, rclone, etc.), configuring retention policies to automatically prune old backups and notifying your team when tasks finish or fail — all without hand-rolled code"
             />
             <FaqItem
               number="2"
@@ -1253,7 +1254,7 @@ export default function Index() {
             <FaqItem
               number="3"
               question="What backup schedules can I schedule?"
-              answer="You can choose from hourly, daily, weekly, monthly or cron cycles and even choose an exact run time (such as 04:00 when it's late night). Weekly schedules enable you to choose a particular weekday, while monthly schedules enable you to choose a particular calendar day, giving you very fine-grained control of maintenance windows."
+              answer="You can choose from hourly, daily, weekly, monthly or cron cycles and even choose an exact run time (such as 04:00 when it's late night). Weekly schedules enable you to choose a particular weekday, while monthly schedules enable you to choose a particular calendar day, giving you very fine-grained control of maintenance windows. You can also configure retention policies to automatically clean up old backups — by time period, count, size limit or GFS (Grandfather-Father-Son), the latter being popular for enterprise compliance."
             />
             <FaqItem
               number="4"

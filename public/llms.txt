@@ -23,6 +23,7 @@
 - Enterprise-grade AES-256-GCM encryption for backup files
 - Open source and free
 - Access management for workspaces and users
+- Retention policies: time period, count, GFS (Grandfather-Father-Son) and size limits
 - Suitable for single developers, DevOps teams, organizations, startups, system administrators and IT departments
 - Supports multiple databases: PostgreSQL, MySQL, MariaDB and MongoDB
 
@@ -194,6 +195,16 @@ Databasus is suitable for:
 - **Restoration**: One-click restore functionality
 - **Encryption**: Enterprise-grade AES-256-GCM encryption for backup files
 - **Security**: All data stays within your infrastructure
+- **Retention Policies**: Automatic cleanup of old backups based on configurable rules
+
+## Retention Policies
+
+Databasus supports flexible retention policies to automatically manage backup storage and lifecycle:
+
+- **Time period**: Keep backups for a fixed duration (e.g., 7 days, 3 months, 1 year) — old backups are removed automatically
+- **Count**: Keep a fixed number of the most recent backups (e.g., last 30) — oldest are pruned when the limit is reached
+- **GFS (Grandfather-Father-Son)**: Layered retention that keeps hourly, daily, weekly, monthly and yearly backups independently, enabling fine-grained long-term history suitable for enterprise compliance requirements
+- **Size limits**: Set per-backup and total storage size caps to control storage usage
 
 ## FAQ
 
@@ -223,6 +234,9 @@ So instead of second-by-second restoration complexity, Databasus prioritizes an 
 
 ### Backup Schedules
 Hourly, daily, weekly, monthly or cron cycles with exact run time specification (e.g., 04:00). Weekly schedules support specific weekdays, monthly schedules support specific calendar days.
+
+### Retention Policies
+Databasus supports four retention strategies: (1) Time period — keep backups for a fixed duration (e.g., 7 days, 3 months, 1 year); (2) Count — keep a fixed number of the most recent backups (e.g., last 30); (3) GFS (Grandfather-Father-Son) — layered retention keeping hourly, daily, weekly, monthly and yearly backups independently for long-term history required by enterprises; (4) Size limits — set per-backup and total storage caps. Retention policies run automatically after each backup, removing outdated archives without manual intervention.
 
 ### Storage Space
 Archives saved to local volumes, S3-compatible buckets, Google Drive, Dropbox and other cloud targets. Balanced compression typically shrinks dump size by 4-8x with ~20% runtime overhead.
