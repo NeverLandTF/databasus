@@ -83,7 +83,7 @@ export default function MysqlBackupPage() {
               "Self-hosted via Docker",
               "Open source and free",
               "Support for MySQL 5.7, 8.0, 8.4, 9",
-              "Support for MariaDB 10, 11",
+              "Support for MariaDB 10, 11, 12",
               "Backup compression and AES-256-GCM encryption",
               "mysqldump alternative with web UI",
             ],
@@ -128,7 +128,7 @@ export default function MysqlBackupPage() {
                 name: "Which MariaDB versions does Databasus support?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Databasus supports MariaDB 10 and 11. For MariaDB backups, Databasus uses the native mariadb-dump tool instead of mysqldump, ensuring full compatibility with MariaDB-specific features and optimizations.",
+                  text: "Databasus supports MariaDB 10, 11 and 12. For MariaDB backups, Databasus uses the native mariadb-dump tool instead of mysqldump, ensuring full compatibility with MariaDB-specific features and optimizations.",
                 },
               },
               {
@@ -557,7 +557,7 @@ export default function MysqlBackupPage() {
                 </h3>
 
                 <p className="text-gray-400 text-sm md:text-base mb-4">
-                  MySQL 5.7, 8.0, 8.4 and 9 are supported. MariaDB 10 and 11 are
+                  MySQL 5.7, 8.0, 8.4 and 9 are supported. MariaDB 10, 11 and 12 are
                   supported with native mariadb-dump tool for full compatibility
                 </p>
 
@@ -892,6 +892,9 @@ export default function MysqlBackupPage() {
                     <span className="px-3 py-1 rounded border border-[#ffffff20] text-sm">
                       MariaDB 11
                     </span>
+                    <span className="px-3 py-1 rounded border border-[#ffffff20] text-sm">
+                      MariaDB 12
+                    </span>
                   </div>
                 </div>
               </div>
@@ -982,7 +985,7 @@ export default function MysqlBackupPage() {
             <FaqItem
               number="4"
               question="Which MariaDB versions does Databasus support?"
-              answer="Databasus supports MariaDB 10 and 11. For MariaDB backups, Databasus uses the native mariadb-dump tool instead of mysqldump, ensuring full compatibility with MariaDB-specific features and optimizations. The same web UI, scheduling, storage and notification features work for both MySQL and MariaDB."
+              answer="Databasus supports MariaDB 10, 11 and 12. For MariaDB backups, Databasus uses the native mariadb-dump tool instead of mysqldump, ensuring full compatibility with MariaDB-specific features and optimizations. The same web UI, scheduling, storage and notification features work for both MySQL and MariaDB."
             />
             <FaqItem
               number="5"
