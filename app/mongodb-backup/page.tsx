@@ -1058,7 +1058,7 @@ export default function MongodbBackupPage() {
             </a>
 
             <p className="text-gray-400 text-sm md:text-base text-center">
-              © 2025 Databasus. All rights reserved.
+              © 2026 Databasus. All rights reserved.
             </p>
           </div>
         </div>

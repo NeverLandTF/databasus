@@ -78,12 +78,31 @@ export default function PrivacyPage() {
               <h1 id="privacy-policy">Privacy Policy</h1>
 
               <p className="text-lg text-gray-400">
-                Last updated: December 26, 2025
+                Last updated: March 9, 2026
               </p>
 
               <p>
                 At Databasus, we take your privacy seriously. This privacy
                 policy explains how we handle data when you visit our website.
+              </p>
+
+              <p>
+                This policy applies to the self-hosted version and the website
+                only. If you are using Databasus Cloud, see the{" "}
+                <a
+                  href="/privacy-cloud"
+                  className="text-blue-500 hover:text-blue-600"
+                >
+                  cloud privacy policy
+                </a>{" "}
+                and{" "}
+                <a
+                  href="/terms-of-use-cloud"
+                  className="text-blue-500 hover:text-blue-600"
+                >
+                  cloud terms of use
+                </a>
+                .
               </p>
 
               <h2 id="our-commitment">Our commitment to privacy</h2>

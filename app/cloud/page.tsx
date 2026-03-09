@@ -267,26 +267,7 @@ export default function Index() {
             </a>
 
             <div className="flex flex-col gap-3 mb-4 text-sm md:text-base">
-              {/* First row - Database backup links */}
-              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-                <a href="/" className="hover:text-gray-200 transition-colors">
-                  PostgreSQL backup
-                </a>
-                <a
-                  href="/mysql-backup"
-                  className="hover:text-gray-200 transition-colors"
-                >
-                  MySQL and MariaDB backup
-                </a>
-                <a
-                  href="/mongodb-backup"
-                  className="hover:text-gray-200 transition-colors"
-                >
-                  MongoDB backup
-                </a>
-              </div>
-
-              {/* Second row - General links */}
+              {/* First row - General links */}
               <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
                 <a
                   href="/installation"
@@ -325,6 +306,22 @@ export default function Index() {
                   Developer
                 </a>
               </div>
+
+              {/* Second row - Cloud legal links */}
+              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+                <a
+                  href="/privacy-cloud"
+                  className="hover:text-gray-200 transition-colors"
+                >
+                  Privacy Policy (cloud)
+                </a>
+                <a
+                  href="/terms-of-use-cloud"
+                  className="hover:text-gray-200 transition-colors"
+                >
+                  Terms of Use (cloud)
+                </a>
+              </div>
             </div>
 
             <a
@@ -335,7 +332,7 @@ export default function Index() {
             </a>
 
             <p className="text-gray-400 text-sm md:text-base text-center">
-              © 2025 Databasus. All rights reserved.
+              © 2026 Databasus. All rights reserved.
             </p>
           </div>
         </div>
