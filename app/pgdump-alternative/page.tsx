@@ -80,12 +80,14 @@ export default function PgDumpAlternativePage() {
               <h1 id="pgdump-alternative">pg_dump Alternative</h1>
 
               <p className="text-lg text-gray-400">
-                Databasus is a PostgreSQL backup tool built on top of{" "}
+                For logical backups, Databasus is built on top of{" "}
                 <code>pg_dump</code>. Rather than replacing <code>pg_dump</code>
                 , Databasus extends its capabilities with backups management, a
                 web interface, automated scheduling, cloud storage integration,
                 notifications, team collaboration features and built-in
-                encryption.
+                encryption. Beyond logical backups, Databasus also supports
+                physical backups, incremental backups with WAL archiving and
+                Point-in-Time Recovery.
               </p>
 
               <h2 id="quick-comparison">Quick comparison</h2>
@@ -171,6 +173,26 @@ export default function PgDumpAlternativePage() {
                     <td>Health monitoring</td>
                     <td data-label="pg_dump">❌ None</td>
                     <td data-label="Databasus">✅ Built-in health checks</td>
+                  </tr>
+                  <tr>
+                    <td>Physical backups</td>
+                    <td data-label="pg_dump">❌ No</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                  </tr>
+                  <tr>
+                    <td>Incremental backups</td>
+                    <td data-label="pg_dump">❌ No</td>
+                    <td data-label="Databasus">✅ WAL-based</td>
+                  </tr>
+                  <tr>
+                    <td>Point-in-Time Recovery</td>
+                    <td data-label="pg_dump">❌ No</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                  </tr>
+                  <tr>
+                    <td>Remote backups</td>
+                    <td data-label="pg_dump">✅ Yes (CLI)</td>
+                    <td data-label="Databasus">✅ Yes</td>
                   </tr>
                 </tbody>
               </table>
@@ -297,6 +319,44 @@ export default function PgDumpAlternativePage() {
                   compression tools
                 </li>
               </ul>
+
+              <h2 id="beyond-pgdump">
+                Beyond pg_dump: Physical backups and PITR
+              </h2>
+
+              <p>
+                While Databasus builds on <code>pg_dump</code> for logical
+                backups, it also goes beyond what <code>pg_dump</code> can
+                offer:
+              </p>
+
+              <ul>
+                <li>
+                  <strong>Physical backups</strong>: File-level copies of the
+                  entire database cluster via <code>pg_basebackup</code>,
+                  streamed through the Databasus agent. Faster backup and
+                  restore for large databases.
+                </li>
+                <li>
+                  <strong>Incremental backups with WAL archiving</strong>:
+                  Continuous WAL segment streaming to Databasus, enabling
+                  Point-in-Time Recovery — restore to any second between
+                  backups.
+                </li>
+                <li>
+                  <strong>Disaster recovery</strong>: Designed for near-zero
+                  data loss requirements with physical base backups and
+                  continuous WAL archiving.
+                </li>
+              </ul>
+
+              <p>
+                These features are available through the Databasus agent — a
+                lightweight binary that runs alongside the database and connects
+                to the Databasus instance. The database never needs to be
+                exposed publicly, making it suitable for closed networks and
+                self-hosted databases.
+              </p>
 
               <h2 id="backup-automation">Backup automation</h2>
 
@@ -533,8 +593,8 @@ fi`}</code>
                 </li>
                 <li>
                   <strong>Unique backup encryption</strong>: Each backup file is
-                  encrypted with a unique key derived from master key, backup
-                  ID and random salt.
+                  encrypted with a unique key derived from master key, backup ID
+                  and random salt.
                 </li>
                 <li>
                   <strong>Read-only database access</strong>: Enforces SELECT
@@ -686,15 +746,19 @@ fi`}</code>
                   </li>
                   <li>You prefer a visual interface over command-line tools</li>
                   <li>You want automatic retention policies and cleanup</li>
+                  <li>
+                    You need physical backups, incremental backups or
+                    Point-in-Time Recovery for disaster recovery
+                  </li>
                 </ul>
               </div>
 
               <p>
-                Databasus doesn&apos;t replace <code>pg_dump</code> — it wraps
-                it with the features needed for production backup management.
-                You&apos;re still getting <code>pg_dump</code>&apos;s reliable,
-                portable logical backups, with automation, security and team
-                features built on top.
+                Databasus builds on <code>pg_dump</code> for logical backups and
+                extends it with automation, security and team features. Beyond
+                that, Databasus also supports physical backups, incremental
+                backups with WAL archiving and Point-in-Time Recovery —
+                capabilities that <code>pg_dump</code> simply cannot provide.
               </p>
             </article>
           </div>

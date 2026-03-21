@@ -49,10 +49,10 @@ export default function FAQPage() {
             mainEntity: [
               {
                 "@type": "Question",
-                name: "Why does Databasus not use raw SQL dump format for PostgreSQL?",
+                name: "Why does Databasus not use raw SQL dump format for logical PostgreSQL backups?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Databasus uses the custom format with zstd compression because it provides the most efficient backup and restore speed after extensive testing. The custom format with zstd compression level 5 offers the optimal balance between backup creation speed, restore speed and file size.",
+                  text: "For logical backups, Databasus uses pg_dump's custom format with zstd compression because it provides the most efficient backup and restore speed after extensive testing. The custom format with zstd compression level 5 offers the optimal balance between backup creation speed, restore speed and file size.",
                 },
               },
               {
@@ -65,10 +65,10 @@ export default function FAQPage() {
               },
               {
                 "@type": "Question",
-                name: "Why doesn't Databasus support PITR (Point-in-Time Recovery)?",
+                name: "How does Databasus support PITR (Point-in-Time Recovery)?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Databasus intentionally focuses on logical backups rather than PITR for several practical reasons: PITR tools typically need to be installed on the same server as your database; incremental backups cannot be restored without direct access to the database storage drive; managed cloud databases don't allow restoring external PITR backups; cloud providers already offer native PITR capabilities; and for 99% of projects, hourly or daily logical backups provide adequate recovery points without the operational complexity of WAL archiving.",
+                  text: "Databasus supports PITR through the Databasus agent — a lightweight Go binary that runs alongside your PostgreSQL database. The agent continuously streams compressed WAL segments to Databasus and performs periodic physical backups via pg_basebackup. To restore, run the agent's restore command with a target timestamp — it downloads the full backup and WAL segments from Databasus, configures PostgreSQL recovery mode, and replays WAL to the exact target time. Suitable for disaster recovery with near-zero data loss, databases in closed networks and large databases where physical backups are faster than logical dumps.",
                 },
               },
               {
@@ -118,11 +118,13 @@ export default function FAQPage() {
               </p>
 
               <h2 id="why-no-raw-sql-dump">
-                Why does Databasus not use raw SQL dump format for PostgreSQL?
+                Why does Databasus not use raw SQL dump format for logical
+                PostgreSQL backups?
               </h2>
 
               <p>
-                Databasus uses the <code>pg_dump</code>&apos;s{" "}
+                For logical backups, Databasus uses{" "}
+                <code>pg_dump</code>&apos;s{" "}
                 <strong>custom format</strong> with{" "}
                 <strong>zstd compression at level 5</strong> instead of the
                 plain SQL format because it provides the most efficient balance
@@ -170,52 +172,94 @@ export default function FAQPage() {
                 directory.
               </p>
 
-              <h2 id="why-no-pitr">
-                Why doesn&apos;t Databasus support PITR (Point-in-Time
-                Recovery)?
+              <h2 id="pitr">
+                How does Databasus support PITR (Point-in-Time Recovery)?
               </h2>
 
               <p>
-                Databasus intentionally focuses on logical backups rather than
-                PITR for several practical reasons:
+                Databasus supports PITR through the{" "}
+                <strong>Databasus agent</strong> — a lightweight Go binary that
+                runs alongside your PostgreSQL database. The agent connects
+                outbound to your Databasus instance, so the database never
+                needs to be exposed publicly.
               </p>
-
-              <ol>
-                <li>
-                  <strong>Complex setup requirements</strong> — PITR tools
-                  typically need to be installed on the same server as your
-                  database, requiring direct filesystem access and careful
-                  configuration
-                </li>
-                <li>
-                  <strong>Restoration limitations</strong> — incremental backups
-                  cannot be restored without direct access to the database
-                  storage drive
-                </li>
-                <li>
-                  <strong>Cloud incompatibility</strong> — managed cloud
-                  databases (AWS RDS, Google Cloud SQL, Azure) don&apos;t allow
-                  restoring external PITR backups, making them useless for
-                  cloud-hosted PostgreSQL
-                </li>
-                <li>
-                  <strong>Built-in cloud PITR</strong> — cloud providers already
-                  offer native PITR capabilities and even they typically default
-                  to hourly or daily granularity
-                </li>
-                <li>
-                  <strong>Practical sufficiency</strong> — for 99% of projects,
-                  hourly or daily logical backups provide adequate recovery
-                  points without the operational complexity of WAL archiving
-                </li>
-              </ol>
 
               <p>
-                So instead of second-by-second restoration complexity, Databasus
-                prioritizes an intuitive UX for individuals and teams, making it
-                the most reliable tool for managing multiple databases and day
-                to day use.
+                <strong>How backups work:</strong>
               </p>
+
+              <ul>
+                <li>
+                  The agent runs two concurrent processes:{" "}
+                  <strong>WAL streaming</strong> and{" "}
+                  <strong>periodic physical backups</strong>
+                </li>
+                <li>
+                  WAL segments are compressed with zstd and continuously
+                  uploaded to Databasus with gap detection to ensure chain
+                  integrity
+                </li>
+                <li>
+                  Physical backups are created via{" "}
+                  <code>pg_basebackup</code>, streamed as compressed TAR
+                  directly to Databasus — no intermediate files on disk
+                </li>
+                <li>
+                  Full backups are triggered on schedule or automatically when
+                  the WAL chain is broken
+                </li>
+              </ul>
+
+              <p>
+                <strong>How restoration works:</strong>
+              </p>
+
+              <ul>
+                <li>
+                  Run{" "}
+                  <code>
+                    databasus-agent restore --target-dir &lt;pgdata&gt;
+                    --target-time &lt;timestamp&gt;
+                  </code>
+                </li>
+                <li>
+                  The agent downloads the full backup and all required WAL
+                  segments from Databasus
+                </li>
+                <li>
+                  It extracts the basebackup, configures PostgreSQL recovery
+                  mode (<code>recovery.signal</code>,{" "}
+                  <code>restore_command</code>,{" "}
+                  <code>recovery_target_time</code>)
+                </li>
+                <li>
+                  Start PostgreSQL — it replays WAL to the target time,
+                  promotes to primary and resumes normal operations
+                </li>
+              </ul>
+
+              <p>
+                <strong>Suitable for:</strong>
+              </p>
+
+              <ul>
+                <li>
+                  Disaster recovery with near-zero data loss — restore to any
+                  second between backups
+                </li>
+                <li>
+                  Self-hosted and on-premise databases where hourly or daily
+                  logical backups are not granular enough
+                </li>
+                <li>
+                  Databases in closed networks — the agent connects outbound
+                  to Databasus, so no inbound access is needed
+                </li>
+                <li>
+                  Large databases where physical backups are faster than
+                  logical dumps
+                </li>
+              </ul>
 
               <h2 id="ai-usage">How is AI used in Databasus development?</h2>
 

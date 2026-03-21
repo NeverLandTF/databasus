@@ -460,6 +460,37 @@ sudo curl -sSL https://raw.githubusercontent.com/databasus/databasus/refs/heads/
                 server&apos;s IP address before starting the services.
               </p>
 
+              <h2 id="agent-mode">
+                Agent mode (physical backups &amp; PITR)
+              </h2>
+
+              <p>
+                The installation above sets up the Databasus server, which
+                handles remote (logical) backups out of the box. For most
+                databases, remote backups are the simplest option — no
+                additional software is required on the database server.
+              </p>
+
+              <p>
+                For physical backups, incremental backups and Point-in-Time
+                Recovery (PITR), Databasus uses a lightweight agent that runs
+                alongside your PostgreSQL server. The agent is designed for
+                advanced scenarios: disaster recovery with near-zero data loss,
+                databases that cannot be exposed publicly, or large datasets
+                where file-level backups are faster than logical dumps.
+              </p>
+
+              <p>
+                See the{" "}
+                <a
+                  href="/installation/agent"
+                  className="text-blue-400 hover:text-blue-300"
+                >
+                  Agent installation guide
+                </a>{" "}
+                for setup instructions.
+              </p>
+
               <h2 id="getting-started">Getting started</h2>
 
               <p>After installation:</p>

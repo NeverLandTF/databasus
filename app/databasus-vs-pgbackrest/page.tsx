@@ -82,11 +82,14 @@ export default function DatabasusVsPgBackRestPage() {
 
               <p className="text-lg text-gray-400">
                 Databasus and pgBackRest are both powerful PostgreSQL backup
-                tools, but they serve fundamentally different purposes and
-                audiences. While Databasus provides an intuitive web interface
-                for individuals, teams and enterprises of all sizes, pgBackRest
-                is a specialized command-line tool designed primarily for DBAs
-                managing very large databases (500GB+).
+                tools that support physical backups, WAL archiving and
+                Point-in-Time Recovery. Databasus provides an intuitive web
+                interface with both logical and physical backup capabilities for
+                individuals, teams and enterprises. pgBackRest is a specialized
+                command-line tool with advanced features like block-level
+                incremental backups, differential backups and delta restore —
+                designed primarily for DBAs managing very large databases
+                (1TB+).
               </p>
 
               <h2 id="quick-comparison">Quick comparison</h2>
@@ -108,7 +111,7 @@ export default function DatabasusVsPgBackRestPage() {
                   <tr>
                     <td>Target audience</td>
                     <td data-label="Databasus">
-                      Individuals, teams, enterprises
+                      Individuals, teams, DBAs, enterprises
                     </td>
                     <td data-label="pgBackRest">
                       DBAs, large enterprises (~1TB+ DBs)
@@ -133,14 +136,12 @@ export default function DatabasusVsPgBackRestPage() {
                   </tr>
                   <tr>
                     <td>Backup type</td>
-                    <td data-label="Databasus">Logical (full backup)</td>
+                    <td data-label="Databasus">Logical + Physical</td>
                     <td data-label="pgBackRest">Physical (file-level)</td>
                   </tr>
                   <tr>
                     <td>Recovery options</td>
-                    <td data-label="Databasus">
-                      ❌ No PITR (restore to any hour or day)
-                    </td>
+                    <td data-label="Databasus">✅ PITR + logical restore</td>
                     <td data-label="pgBackRest">
                       ✅ WAL-based PITR (second-precise)
                     </td>
@@ -154,10 +155,30 @@ export default function DatabasusVsPgBackRestPage() {
                   </tr>
                   <tr>
                     <td>Incremental backups</td>
-                    <td data-label="Databasus">
-                      Full backups with compression
-                    </td>
+                    <td data-label="Databasus">✅ WAL-based</td>
                     <td data-label="pgBackRest">Block-level incremental</td>
+                  </tr>
+                  <tr>
+                    <td>Differential backups</td>
+                    <td data-label="Databasus">❌ No</td>
+                    <td data-label="pgBackRest">✅ Yes</td>
+                  </tr>
+                  <tr>
+                    <td>Delta restore</td>
+                    <td data-label="Databasus">❌ No</td>
+                    <td data-label="pgBackRest">✅ Yes (changed files only)</td>
+                  </tr>
+                  <tr>
+                    <td>Remote backups</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                    <td data-label="pgBackRest">
+                      ❌ No (requires filesystem access)
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Agent backups</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                    <td data-label="pgBackRest">✅ Yes</td>
                   </tr>
                   <tr>
                     <td>Team features</td>
@@ -225,6 +246,11 @@ export default function DatabasusVsPgBackRestPage() {
                   with comprehensive security, multiple storage destinations and
                   notification channels.
                 </li>
+                <li>
+                  <strong>DBAs and disaster recovery</strong>: Physical backups,
+                  WAL archiving and PITR for mission-critical systems with
+                  near-zero data loss requirements.
+                </li>
               </ul>
 
               <h3 id="audience-pgbackrest">pgBackRest audience</h3>
@@ -246,8 +272,9 @@ export default function DatabasusVsPgBackRestPage() {
                   proficiency.
                 </li>
                 <li>
-                  <strong>Mission-critical systems</strong>: Where
-                  second-precise Point-in-Time Recovery is a strict requirement.
+                  <strong>Very large scale</strong>: Where block-level
+                  incremental backups, differential backups and delta restore
+                  are essential for performance.
                 </li>
               </ul>
 
@@ -258,30 +285,33 @@ export default function DatabasusVsPgBackRestPage() {
                 with distinct advantages:
               </p>
 
-              <h3 id="backup-databasus">Databasus: Logical backups</h3>
+              <h3 id="backup-databasus">
+                Databasus: Logical + Physical backups
+              </h3>
 
               <p>
-                Databasus uses <code>pg_dump</code> for logical backups,
-                creating SQL representations of your data (in parallel mode):
+                Databasus supports both logical and physical backup strategies:
               </p>
 
               <ul>
                 <li>
-                  <strong>Portable</strong>: Backups can be restored to
-                  different PostgreSQL versions or even different servers.
+                  <strong>Logical backups (remote mode)</strong>: Uses{" "}
+                  <code>pg_dump</code> for portable backups that can be restored
+                  to different PostgreSQL versions. Selective restore of
+                  specific tables or schemas. No agent required.
                 </li>
                 <li>
-                  <strong>Selective restore</strong>: Restore specific tables or
-                  schemas without restoring the entire database.
+                  <strong>Physical backups (agent mode)</strong>: File-level
+                  copies via <code>pg_basebackup</code> with continuous WAL
+                  archiving and Point-in-Time Recovery.
                 </li>
                 <li>
                   <strong>Efficient compression</strong>: Uses zstd (level 5)
-                  compression, reducing backup sizes by 4-8x with only ~20%
-                  runtime overhead.
+                  for both backup types, reducing sizes by 4-8x.
                 </li>
                 <li>
-                  <strong>Read-only access</strong>: Only requires SELECT
-                  permissions, minimizing security risks.
+                  <strong>Read-only access</strong>: Logical backups only
+                  require SELECT permissions, minimizing security risks.
                 </li>
               </ul>
 
@@ -323,21 +353,25 @@ export default function DatabasusVsPgBackRestPage() {
 
               <ul>
                 <li>
-                  <strong>Restore to any hour or day</strong>: With hourly,
-                  daily, weekly, monthly or cron backup schedules, you can
-                  restore to any backup point you&apos;ve configured.
+                  <strong>Point-in-Time Recovery</strong>: Restore to any
+                  specific second using WAL replay via the agent.
+                </li>
+                <li>
+                  <strong>Full cluster restore</strong>: Restore the entire
+                  database cluster to a specific point in time from physical
+                  backups.
+                </li>
+                <li>
+                  <strong>Logical restore</strong>: Restore from scheduled
+                  logical backups to any backup point.
                 </li>
                 <li>
                   <strong>One-click restore</strong>: Download and restore
-                  backups directly from the web interface.
+                  logical backups directly from the web interface.
                 </li>
                 <li>
-                  <strong>Parallel restores</strong>: Utilize multiple CPU cores
-                  to speed up restoration of large backups.
-                </li>
-                <li>
-                  <strong>Cross-version compatibility</strong>: Restore backups
-                  to different PostgreSQL versions when needed.
+                  <strong>Cross-version compatibility</strong>: Logical backups
+                  can be restored to different PostgreSQL versions.
                 </li>
               </ul>
 
@@ -364,17 +398,16 @@ export default function DatabasusVsPgBackRestPage() {
 
               <div className="rounded-lg border border-[#ffffff20] bg-[#1f2937] px-4 pt-4 my-6">
                 <p className="text-gray-300 m-0">
-                  <strong className="text-amber-400">Note:</strong> For most
-                  applications, restoring to the nearest hour or day (as
-                  Databasus provides) is sufficient. Second-precise PITR is
-                  typically only required for mission-critical financial or
-                  transactional systems where every transaction must be
-                  recoverable.{" "}
+                  <strong className="text-amber-400">Note:</strong> Both tools
+                  support PITR. pgBackRest additionally offers delta restore
+                  (only fetching changed files), differential backups and
+                  standby creation from backups — features optimized for very
+                  large databases.{" "}
                   <a
-                    href="/faq#why-no-pitr"
+                    href="/faq#pitr"
                     className="text-blue-400 hover:text-blue-300"
                   >
-                    Learn why Databasus doesn&apos;t support PITR →
+                    Learn how Databasus supports PITR →
                   </a>
                 </p>
               </div>
@@ -660,8 +693,9 @@ export default function DatabasusVsPgBackRestPage() {
                     etc.
                   </li>
                   <li>
-                    Restoring to any hour or day meets your recovery
-                    requirements
+                    You want to manage backups for multiple databases from a
+                    single dashboard with scheduling, notifications and team
+                    features
                   </li>
                   <li>
                     You want quick setup with minimal PostgreSQL expertise
@@ -683,11 +717,15 @@ export default function DatabasusVsPgBackRestPage() {
                     (~1TB+)
                   </li>
                   <li>
-                    You require second-precise Point-in-Time Recovery for
-                    mission-critical systems
+                    You need block-level incremental backups for reduced storage
+                    at very large scale
                   </li>
                   <li>
-                    Block-level incremental backups are essential for your scale
+                    You need differential backups or delta restore (only changed
+                    files)
+                  </li>
+                  <li>
+                    You need standby creation from backups for high availability
                   </li>
                   <li>
                     You&apos;re comfortable with command-line tools and
@@ -696,24 +734,21 @@ export default function DatabasusVsPgBackRestPage() {
                   <li>
                     Your organization has dedicated DBA expertise available
                   </li>
-                  <li>
-                    You use self-hosted PostgreSQL databases (not cloud-managed)
-                  </li>
                 </ul>
               </div>
 
               <p>
-                For most use cases, from individual projects to production
-                databases and to enterprise deployments, Databasus provides the
-                right balance of power and usability — and works seamlessly with
-                both self-hosted and cloud-managed databases. Databasus is
-                suitable for comprehensive backup management, not just backups.
+                Both tools support physical backups, WAL archiving and PITR.
+                Databasus provides the right balance of power and usability with
+                its web interface, team features and support for both logical
+                and physical backups — working seamlessly with both self-hosted
+                and cloud-managed databases.
                 <br />
                 <br />
                 pgBackRest remains the specialized choice for DBAs managing very
-                large self-hosted databases where its advanced features become
-                necessary, or for teams building database platforms that need to
-                provide PITR capabilities to their customers.
+                large self-hosted databases where block-level incremental
+                backups, differential backups and delta restore become essential
+                at scale.
               </p>
             </article>
           </div>

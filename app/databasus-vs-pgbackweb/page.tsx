@@ -160,6 +160,26 @@ export default function DatabasusVsPgBackWebPage() {
                     </td>
                     <td data-label="PgBackWeb">Manual Docker setup</td>
                   </tr>
+                  <tr>
+                    <td>Physical backups</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                    <td data-label="PgBackWeb">❌ Not available</td>
+                  </tr>
+                  <tr>
+                    <td>Incremental backups</td>
+                    <td data-label="Databasus">✅ WAL-based</td>
+                    <td data-label="PgBackWeb">❌ Not available</td>
+                  </tr>
+                  <tr>
+                    <td>WAL archiving</td>
+                    <td data-label="Databasus">✅ Continuous streaming</td>
+                    <td data-label="PgBackWeb">❌ Not available</td>
+                  </tr>
+                  <tr>
+                    <td>Point-in-Time Recovery</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                    <td data-label="PgBackWeb">❌ Not available</td>
+                  </tr>
                 </tbody>
               </table>
 
@@ -182,6 +202,15 @@ export default function DatabasusVsPgBackWebPage() {
                   slower and less efficient than zstd.
                 </li>
               </ul>
+
+              <p>
+                Beyond logical backups, Databasus also supports physical
+                backups with continuous WAL archiving and Point-in-Time
+                Recovery through its agent mode. This enables incremental
+                backups, disaster recovery with near-zero data loss and
+                restore to any second between backups — features that
+                PgBackWeb does not offer at all.
+              </p>
 
               <h2 id="storage-options">Storage options</h2>
 
@@ -503,6 +532,10 @@ export default function DatabasusVsPgBackWebPage() {
                   <li>Quick installation with one-line script or Docker</li>
                   <li>Intuitive modern UI with minimal learning curve</li>
                   <li>Permissive Apache 2.0 license for commercial use</li>
+                  <li>
+                    Physical backups, incremental backups, WAL archiving and
+                    PITR for disaster recovery
+                  </li>
                 </ul>
               </div>
 

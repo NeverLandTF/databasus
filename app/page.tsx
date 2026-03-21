@@ -188,7 +188,7 @@ export default function Index() {
                 name: "How is Databasus different from PgBackRest, Barman or pg_dump?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Databasus provides a modern, user-friendly web interface instead of complex configuration files and command-line tools. While PgBackRest and Barman require extensive configuration and command-line expertise, Databasus offers intuitive point-and-click setup. Unlike raw pg_dump scripts, it includes built-in scheduling, compression, multiple storage destinations, health monitoring and real-time notifications — all managed through a simple web UI.",
+                  text: "Databasus prefers simplicity — it provides a modern web interface to manage backups for many databases at once, with built-in scheduling, compression, multiple storage destinations, health monitoring and real-time notifications. At the same time, Databasus also works in agent mode for disaster recovery with WAL archiving and Point-in-Time Recovery. The agent connects from closed networks to the Databasus instance and streams backups, so databases that are not publicly exposed can still be backed up and managed from a single dashboard.",
                 },
               },
               {
@@ -205,6 +205,14 @@ export default function Index() {
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: "Yes! You can restore backups directly from storage (like S3, Google Drive, etc.) without Databasus itself. There is no vendor lock-in, even on this open source tool. With just your secret.key file, you can decrypt and restore any backup manually using standard database tools. This means if your Databasus instance is unavailable or you lose access to it, your backups remain fully recoverable.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "What backup types does Databasus support?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Databasus supports logical, physical, WAL archiving and Point-in-Time Recovery (PITR). In remote mode, Databasus connects to the database over the network and performs logical backups — no agent needed. In agent mode, a lightweight Go agent runs alongside the database and connects to the Databasus instance, enabling physical backups with continuous WAL archiving and PITR for disaster recovery. Because the agent connects to Databasus, you can manage incremental backups for many databases from a single dashboard.",
                 },
               },
             ],
@@ -800,7 +808,7 @@ export default function Index() {
               </div>
             </div>
 
-            {/* Card 11: Suitable for clouds */}
+            {/* Card 11: Backup types and modes */}
             <div className="col-span-1 md:col-span-2 lg:col-span-2 p-5 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6">
               <div className="flex items-center justify-center w-6 h-6 rounded text-sm font-semibold border border-[#ffffff20] shrink-0">
                 11
@@ -808,16 +816,16 @@ export default function Index() {
 
               <div>
                 <h3 className="text-lg md:text-xl 2xl:text-2xl font-bold mb-4 md:mb-5">
-                  Suitable both for self-hosted and cloud databases
+                  Logical, physical and incremental backups with PITR
                 </h3>
 
                 <p className="text-gray-400 text-sm md:text-base">
-                  Databasus works seamlessly with cloud-hosted databases
-                  including AWS RDS, Google Cloud SQL, Azure Database. This is
-                  why Databasus does not support incremental backups: clouds
-                  already have them, but usually you cannot restore external
-                  PITR backup back to the cloud. Hourly and daily granularity
-                  are enough for 99% of even large enterprise projects
+                  Databasus supports logical, physical and incremental backups
+                  with Point-in-Time Recovery. This makes Databasus suitable for
+                  disaster recovery with WAL archiving and PITR, and works
+                  equally well with self-hosted and cloud databases — use remote
+                  mode for cloud-managed or publicly accessible DBs, and agent
+                  mode for closed networks and host-installed databases
                 </p>
               </div>
             </div>
@@ -1322,16 +1330,21 @@ export default function Index() {
               question="How is Databasus different from PgBackRest, Barman or pg_dump? Where can I read comparisons?"
               answer={
                 <>
-                  Unlike other tools, Databasus provides a way to manage many
-                  databases for teams in a modern, user-friendly web interface
-                  (instead of complex configuration files and command-line
-                  tools). While PgBackRest and Barman just backups single
-                  database, require extensive configuration and command-line
-                  expertise — Databasus offers way to setup full backup
-                  management for many databases. Unlike raw pg_dump scripts, it
-                  includes built-in scheduling, compression, multiple storage
-                  destinations, health monitoring and real-time notifications —
-                  all managed through a simple web UI.
+                  Databasus prefers simplicity — it provides a modern web
+                  interface to manage backups for many databases at once,
+                  instead of complex configuration files and command-line tools.
+                  Unlike raw pg_dump scripts, it includes built-in scheduling,
+                  compression, multiple storage destinations, health monitoring
+                  and real-time notifications — all managed through a simple web
+                  UI.
+                  <br />
+                  <br />
+                  At the same time, Databasus also works in agent mode — similar
+                  to WAL-G or pgBackRest — for disaster recovery with WAL
+                  archiving and Point-in-Time Recovery. The agent connects from
+                  closed networks to the Databasus instance, so databases that
+                  are not publicly exposed can still be backed up and managed
+                  from a single dashboard.
                   <br />
                   <br />
                   We have detailed comparison pages for popular backup tools:{" "}
@@ -1415,7 +1428,7 @@ export default function Index() {
             <FaqItem
               number="10"
               question="Is Databasus an alternative to pg_dump?"
-              answer="Yes, Databasus is a modern alternative to pg_dump. Under the hood, Databasus extends pg_dump features, adds user-friendly web interface, automated scheduling, multiple storage destinations, real-time notifications, health monitoring and backup encryption. Think of Databasus as pg_dump with superpowers — you get all the reliability of pg_dump plus optimizations and enterprise features without writing shell scripts."
+              answer="For logical backups, yes — Databasus is a modern replacement for pg_dump. It extends pg_dump with a user-friendly web interface, automated scheduling, multiple storage destinations, real-time notifications, health monitoring and backup encryption. Think of it as pg_dump with superpowers — all the reliability plus enterprise features without writing shell scripts. Beyond logical backups, Databasus also supports agent mode where physical backups with WAL archiving are used for disaster recovery scenarios, providing incremental backups and Point-in-Time Recovery."
             />
             <FaqItem
               number="11"
@@ -1424,47 +1437,33 @@ export default function Index() {
             />
             <FaqItem
               number="12"
-              question="Why doesn't Databasus support PITR (Point-in-Time Recovery)?"
+              question="What backup types does Databasus support?"
               answer={
                 <>
-                  Databasus intentionally focuses on logical backups rather than
-                  PITR for several practical reasons:
-                  <ol className="list-decimal list-inside mt-3 space-y-2">
-                    <li>
-                      <strong>Complex setup requirements</strong> — PITR tools
-                      typically need to be installed on the same server as your
-                      database, requiring direct filesystem access and careful
-                      configuration. You can backup only single database
-                      (Databasus allows many)
-                    </li>
-                    <li>
-                      <strong>Restoration limitations</strong> — incremental
-                      backups cannot be restored without direct access to the
-                      database storage drive
-                    </li>
-                    <li>
-                      <strong>Cloud incompatibility</strong> — managed cloud
-                      databases (AWS RDS, Google Cloud SQL, Azure, Supabase)
-                      don&apos;t allow restoring external PITR backups, making
-                      them useless for cloud-hosted PostgreSQL
-                    </li>
-                    <li>
-                      <strong>Built-in cloud PITR</strong> — cloud providers
-                      already offer native PITR capabilities, and even they
-                      typically default to hourly or daily granularity
-                    </li>
-                    <li>
-                      <strong>Practical sufficiency</strong> — for 99% of
-                      projects, hourly or daily logical backups provide adequate
-                      recovery points without the operational complexity of WAL
-                      archiving
-                    </li>
-                  </ol>
+                  Databasus supports logical, physical, WAL archiving and
+                  Point-in-Time Recovery (PITR) — so it suits both those who
+                  want simple remote backups and those who need a solid disaster
+                  recovery tool.
                   <br />
-                  So instead of second-by-second restoration complexity,
-                  Databasus prioritizes an intuitive UX for individuals and
-                  teams, making it the most reliable tool for managing multiple
-                  databases and day to day use
+                  <br />
+                  <strong>Remote mode</strong> — Databasus connects to the
+                  database over the network and performs logical backups (like
+                  pg_dump). No agent or additional software required. Ideal for
+                  cloud-managed and publicly accessible databases.
+                  <br />
+                  <br />
+                  <strong>Agent mode</strong> — a lightweight agent runs
+                  alongside the database and connects to the Databasus instance.
+                  This enables physical backups with continuous WAL archiving
+                  and PITR — designed for disaster recovery and near-zero data
+                  loss. The agent streams backups directly to Databasus, so the
+                  database never needs to be exposed publicly.
+                  <br />
+                  <br />
+                  Because the agent connects to the Databasus instance, you can
+                  manage incremental backups for many databases from a single
+                  dashboard — unlike standalone tools like WAL-G or pgBackRest
+                  where each database is managed separately.
                 </>
               }
             />

@@ -13,6 +13,9 @@ const navItems: NavItem[] = [
   {
     title: "Installation",
     href: "/installation",
+    children: [
+      { title: "Agent mode", href: "/installation/agent" },
+    ],
   },
   {
     title: "Storages",

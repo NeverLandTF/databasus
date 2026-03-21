@@ -81,13 +81,14 @@ export default function DatabasusVsWalGPage() {
 
               <p className="text-lg text-gray-400">
                 Databasus and WAL-G are both capable backup tools that support
-                PostgreSQL, but they take fundamentally different approaches.
-                Databasus focuses on comprehensive backup management with an
-                intuitive web interface, while WAL-G is a command-line tool that
-                supports multiple database systems including PostgreSQL, MySQL,
-                MS SQL, MongoDB and others. If you need a user-friendly solution
-                for managing backups across multiple databases, Databasus offers
-                a more streamlined experience.
+                PostgreSQL with physical backups, WAL archiving and
+                Point-in-Time Recovery. Databasus focuses on comprehensive
+                backup management with an intuitive web interface and both
+                logical and physical backup capabilities. WAL-G is a
+                command-line tool that uses a custom streaming protocol for
+                slightly better performance, supports delta backups (changed
+                pages only) and covers more database engines including MS SQL,
+                FoundationDB and Greenplum.
               </p>
 
               <h2 id="quick-comparison">Quick comparison</h2>
@@ -125,7 +126,7 @@ export default function DatabasusVsWalGPage() {
                   </tr>
                   <tr>
                     <td>Backup type</td>
-                    <td data-label="Databasus">Logical (pg_dump)</td>
+                    <td data-label="Databasus">Logical + Physical</td>
                     <td data-label="WAL-G">Physical (WAL archiving)</td>
                   </tr>
                   <tr>
@@ -136,7 +137,7 @@ export default function DatabasusVsWalGPage() {
                   <tr>
                     <td>Recovery options</td>
                     <td data-label="Databasus">
-                      ❌ No PITR (restore to any hour or day)
+                      ✅ PITR + logical restore
                     </td>
                     <td data-label="WAL-G">
                       ✅ WAL-based PITR (second-precise)
@@ -144,11 +145,23 @@ export default function DatabasusVsWalGPage() {
                   </tr>
                   <tr>
                     <td>Incremental backups</td>
-                    <td data-label="Databasus">
-                      Full backups with compression
-                    </td>
+                    <td data-label="Databasus">✅ WAL-based</td>
                     <td data-label="WAL-G">
                       Delta backups (changed pages only)
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Remote backups</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                    <td data-label="WAL-G">
+                      ❌ No (local agent only)
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Agent backups</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                    <td data-label="WAL-G">
+                      ✅ Yes
                     </td>
                   </tr>
                   <tr>
@@ -311,6 +324,16 @@ export default function DatabasusVsWalGPage() {
                   running PostgreSQL, MySQL, MariaDB or MongoDB benefit from
                   centralized backup management.
                 </li>
+                <li>
+                  <strong>DBAs and disaster recovery</strong>: Physical
+                  backups, WAL archiving and PITR for mission-critical systems
+                  with near-zero data loss requirements.
+                </li>
+                <li>
+                  <strong>DevOps engineers</strong>: Agent mode integrates
+                  into existing infrastructure, while the web UI and API
+                  provide visibility and control without custom scripting.
+                </li>
               </ul>
 
               <h3 id="audience-wal-g">WAL-G audience</h3>
@@ -335,9 +358,9 @@ export default function DatabasusVsWalGPage() {
                   integrate well.
                 </li>
                 <li>
-                  <strong>Users needing PITR</strong>: Those requiring
-                  second-precise Point-in-Time Recovery for mission-critical
-                  systems.
+                  <strong>Extended database support</strong>: Teams needing
+                  backup for MS SQL, FoundationDB or Greenplum alongside
+                  PostgreSQL.
                 </li>
               </ul>
 
@@ -348,26 +371,33 @@ export default function DatabasusVsWalGPage() {
                 with distinct advantages:
               </p>
 
-              <h3 id="backup-databasus">Databasus: Logical backups</h3>
+              <h3 id="backup-databasus">
+                Databasus: Logical + Physical backups
+              </h3>
 
               <p>
-                Databasus uses <code>pg_dump</code> for logical backups,
-                creating SQL representations of your data:
+                Databasus supports both logical and physical backup
+                strategies:
               </p>
 
               <ul>
                 <li>
-                  <strong>Portable</strong>: Backups can be restored to
-                  different PostgreSQL versions or even different servers.
+                  <strong>Logical backups (remote mode)</strong>: Uses{" "}
+                  <code>pg_dump</code> for portable backups that can be
+                  restored to different PostgreSQL versions. No agent required.
+                </li>
+                <li>
+                  <strong>Physical backups (agent mode)</strong>: File-level
+                  copies via <code>pg_basebackup</code> with continuous WAL
+                  archiving and Point-in-Time Recovery.
                 </li>
                 <li>
                   <strong>Efficient compression</strong>: Uses zstd (level 5)
-                  compression, reducing backup sizes by 4-8x with only ~20%
-                  runtime overhead.
+                  for both backup types, reducing sizes by 4-8x.
                 </li>
                 <li>
-                  <strong>Read-only access</strong>: Only requires SELECT
-                  permissions, minimizing security risks.
+                  <strong>Read-only access</strong>: Logical backups only
+                  require SELECT permissions, minimizing security risks.
                 </li>
               </ul>
 
@@ -410,21 +440,25 @@ export default function DatabasusVsWalGPage() {
 
               <ul>
                 <li>
-                  <strong>Restore to any hour or day</strong>: With hourly,
-                  daily, weekly, monthly or cron backup schedules, you can
-                  restore to any backup point you&apos;ve configured.
+                  <strong>Point-in-Time Recovery</strong>: Restore to any
+                  specific second using WAL replay via the agent.
+                </li>
+                <li>
+                  <strong>Full cluster restore</strong>: Restore the entire
+                  database cluster to a specific point in time from physical
+                  backups.
+                </li>
+                <li>
+                  <strong>Logical restore</strong>: Restore from scheduled
+                  logical backups to any backup point.
                 </li>
                 <li>
                   <strong>One-click restore</strong>: Download and restore
-                  backups directly from the web interface.
+                  logical backups directly from the web interface.
                 </li>
                 <li>
-                  <strong>Parallel restores</strong>: Utilize multiple CPU cores
-                  to speed up restoration of large backups.
-                </li>
-                <li>
-                  <strong>Cross-version compatibility</strong>: Restore backups
-                  to different PostgreSQL versions when needed.
+                  <strong>Cross-version compatibility</strong>: Logical
+                  backups can be restored to different PostgreSQL versions.
                 </li>
               </ul>
 
@@ -451,17 +485,15 @@ export default function DatabasusVsWalGPage() {
 
               <div className="rounded-lg border border-[#ffffff20] bg-[#1f2937] px-4 pt-4 my-6">
                 <p className="text-gray-300 m-0">
-                  <strong className="text-amber-400">Note:</strong> For most
-                  applications, restoring to the nearest hour or day (as
-                  Databasus provides) is sufficient. Second-precise PITR is
-                  typically only required for mission-critical financial or
-                  transactional systems where every transaction must be
-                  recoverable.{" "}
+                  <strong className="text-amber-400">Note:</strong> Both
+                  tools support PITR. WAL-G additionally offers delta restore
+                  (fetching only changed pages) and uses a custom streaming
+                  protocol for slightly better performance at scale.{" "}
                   <a
-                    href="/faq#why-no-pitr"
+                    href="/faq#pitr"
                     className="text-blue-400 hover:text-blue-300"
                   >
-                    Learn why Databasus doesn&apos;t support PITR →
+                    Learn how Databasus supports PITR →
                   </a>
                 </p>
               </div>
@@ -804,8 +836,9 @@ export default function DatabasusVsWalGPage() {
                     You want built-in scheduling without external cron setup
                   </li>
                   <li>
-                    Restoring to any hour or day meets your recovery
-                    requirements
+                    You want to manage backups for multiple databases from a
+                    single dashboard with scheduling, notifications and team
+                    features
                   </li>
                   <li>You want quick setup with minimal database expertise</li>
                   <li>Built-in backup encryption is important to you</li>
@@ -822,48 +855,39 @@ export default function DatabasusVsWalGPage() {
                 </p>
                 <ul className="text-white mb-0">
                   <li>
-                    You manage multiple self-hosted database systems
-                    (PostgreSQL, MySQL, MongoDB, etc.) and want a unified tool
+                    You need delta backups (changed pages only) for reduced
+                    storage and transfer time
                   </li>
                   <li>
-                    You require second-precise Point-in-Time Recovery for
-                    mission-critical self-hosted systems
-                  </li>
-                  <li>
-                    Delta backups are important for reducing storage and
-                    transfer time
+                    You need support for MS SQL, FoundationDB or Greenplum
                   </li>
                   <li>
                     You prefer command-line tools and infrastructure-as-code
                     workflows
                   </li>
                   <li>
-                    You&apos;re comfortable setting up cron jobs and custom
-                    notification scripts
+                    You want multiple compression algorithms (LZ4, LZMA,
+                    Brotli, zstd) with fine-tuned control
                   </li>
                   <li>
                     Your team has DevOps expertise for CLI-based tool management
-                  </li>
-                  <li>
-                    You&apos;re building a database platform and need to backup
-                    customer databases with PITR capabilities
                   </li>
                 </ul>
               </div>
 
               <p>
-                For comprehensive backup management, Databasus offers a more
-                streamlined experience with its unified interface and built-in
-                features — and works seamlessly with both self-hosted and
-                cloud-managed databases. Databasus is suitable for comprehensive
-                backup management of production databases, not just backups.
+                Both tools support physical backups, WAL archiving and PITR.
+                Databasus provides comprehensive backup management with its
+                web interface, team features and support for both logical and
+                physical backups — working seamlessly with both self-hosted
+                and cloud-managed databases.
                 <br />
                 <br />
-                WAL-G remains an excellent choice for organizations with
-                self-hosted databases who prefer CLI-based workflows and need
-                advanced features like delta backups and precise PITR, or for
-                teams building database platforms that need to provide PITR
-                capabilities to their customers.
+                WAL-G remains an excellent choice for teams that prefer
+                CLI-based workflows and need its unique advantages: delta
+                backups (changed pages only), a custom streaming protocol for
+                slightly better performance and support for additional
+                database engines beyond PostgreSQL.
               </p>
             </article>
           </div>

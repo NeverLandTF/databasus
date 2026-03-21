@@ -81,13 +81,15 @@ export default function DatabasusVsBarmanPage() {
               <h1 id="databasus-vs-barman">Databasus vs Barman</h1>
 
               <p className="text-lg text-gray-400">
-                Databasus and Barman are both PostgreSQL backup tools, but they
-                take fundamentally different approaches. Databasus provides an
-                intuitive web interface for logical backups with team
-                collaboration features, while Barman (Backup and Recovery
-                Manager) is a command-line tool focused on physical backups and
-                Point-in-Time Recovery (PITR) for enterprise disaster recovery
-                scenarios.
+                Databasus and Barman are both PostgreSQL backup tools that
+                support physical backups, WAL archiving and Point-in-Time
+                Recovery. Databasus provides an intuitive web interface with
+                both logical and physical backup capabilities, team
+                collaboration features and support for multiple database
+                engines. Barman (Backup and Recovery Manager) is a
+                command-line tool with advanced features like rsync-based
+                incremental backups, streaming replication integration and
+                Barman-to-Barman geo-redundancy.
               </p>
 
               <h2 id="quick-comparison">Quick comparison</h2>
@@ -109,10 +111,10 @@ export default function DatabasusVsBarmanPage() {
                   <tr>
                     <td>Target audience</td>
                     <td data-label="Databasus">
-                      Individuals, teams, enterprises
+                      Individuals, teams, DBAs, enterprises
                     </td>
                     <td data-label="Barman">
-                      DBAs, enterprises requiring PITR
+                      DBAs, enterprises
                     </td>
                   </tr>
                   <tr>
@@ -129,13 +131,13 @@ export default function DatabasusVsBarmanPage() {
                   </tr>
                   <tr>
                     <td>Backup type</td>
-                    <td data-label="Databasus">Logical (pg_dump)</td>
+                    <td data-label="Databasus">Logical + Physical</td>
                     <td data-label="Barman">Physical (file-level)</td>
                   </tr>
                   <tr>
                     <td>Recovery options</td>
                     <td data-label="Databasus">
-                      ❌ No PITR (restore to any hour or day)
+                      ✅ PITR + logical restore
                     </td>
                     <td data-label="Barman">
                       ✅ WAL-based PITR (second-precise)
@@ -143,10 +145,22 @@ export default function DatabasusVsBarmanPage() {
                   </tr>
                   <tr>
                     <td>Incremental backups</td>
-                    <td data-label="Databasus">
-                      Full backups with compression
-                    </td>
+                    <td data-label="Databasus">✅ WAL-based</td>
                     <td data-label="Barman">rsync-based incremental</td>
+                  </tr>
+                  <tr>
+                    <td>Remote backups</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                    <td data-label="Barman">
+                      ❌ No (requires filesystem access)
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Agent backups</td>
+                    <td data-label="Databasus">✅ Yes</td>
+                    <td data-label="Barman">
+                      ✅ Yes
+                    </td>
                   </tr>
                   <tr>
                     <td>Multi-server management</td>
@@ -229,6 +243,11 @@ export default function DatabasusVsBarmanPage() {
                   with comprehensive security, multiple storage destinations and
                   notification channels.
                 </li>
+                <li>
+                  <strong>DBAs and disaster recovery</strong>: Physical
+                  backups, WAL archiving and PITR for mission-critical systems
+                  with near-zero data loss requirements.
+                </li>
               </ul>
 
               <h3 id="audience-barman">Barman audience</h3>
@@ -242,19 +261,16 @@ export default function DatabasusVsBarmanPage() {
                 <li>
                   <strong>Enterprise DBAs</strong>: Professionals who need
                   centralized backup management for multiple PostgreSQL servers
-                  from a single location.
+                  from a dedicated backup server.
                 </li>
                 <li>
-                  <strong>Disaster recovery specialists</strong>: Teams
-                  requiring second-precise Point-in-Time Recovery for
-                  mission-critical systems.
+                  <strong>Teams needing rsync-based incremental</strong>:
+                  File-level diffing reduces backup time and network usage for
+                  large clusters.
                 </li>
                 <li>
-                  <strong>
-                    Organizations with strict RPO/RTO requirements
-                  </strong>
-                  : Where Recovery Point Objective demands minimal data loss and
-                  WAL-based recovery is essential.
+                  <strong>Geo-redundancy requirements</strong>: Barman-to-Barman
+                  replication for geographical redundancy across data centers.
                 </li>
               </ul>
 
@@ -265,26 +281,33 @@ export default function DatabasusVsBarmanPage() {
                 with distinct advantages:
               </p>
 
-              <h3 id="backup-databasus">Databasus: Logical backups</h3>
+              <h3 id="backup-databasus">
+                Databasus: Logical + Physical backups
+              </h3>
 
               <p>
-                Databasus uses <code>pg_dump</code> for logical backups,
-                creating SQL representations of your data (in parallel mode):
+                Databasus supports both logical and physical backup
+                strategies:
               </p>
 
               <ul>
                 <li>
-                  <strong>Portable</strong>: Backups can be restored to
-                  different PostgreSQL versions or even different servers.
+                  <strong>Logical backups (remote mode)</strong>: Uses{" "}
+                  <code>pg_dump</code> for portable backups that can be
+                  restored to different PostgreSQL versions. No agent required.
+                </li>
+                <li>
+                  <strong>Physical backups (agent mode)</strong>: File-level
+                  copies via <code>pg_basebackup</code> with continuous WAL
+                  archiving and Point-in-Time Recovery.
                 </li>
                 <li>
                   <strong>Efficient compression</strong>: Uses zstd (level 5)
-                  compression, reducing backup sizes by 4-8x with only ~20%
-                  runtime overhead.
+                  compression for both logical and physical backups.
                 </li>
                 <li>
-                  <strong>Read-only access</strong>: Only requires SELECT
-                  permissions, minimizing security risks.
+                  <strong>Read-only access</strong>: Logical backups only
+                  require SELECT permissions, minimizing security risks.
                 </li>
               </ul>
 
@@ -328,21 +351,25 @@ export default function DatabasusVsBarmanPage() {
 
               <ul>
                 <li>
-                  <strong>Restore to any hour or day</strong>: With hourly,
-                  daily, weekly, monthly or cron backup schedules, you can
-                  restore to any backup point you&apos;ve configured.
+                  <strong>Point-in-Time Recovery</strong>: Restore to any
+                  specific second using WAL replay via the agent.
+                </li>
+                <li>
+                  <strong>Full cluster restore</strong>: Restore the entire
+                  database cluster to a specific point in time from physical
+                  backups.
+                </li>
+                <li>
+                  <strong>Logical restore</strong>: Restore from scheduled
+                  logical backups to any backup point.
                 </li>
                 <li>
                   <strong>One-click restore</strong>: Download and restore
-                  backups directly from the web interface.
+                  logical backups directly from the web interface.
                 </li>
                 <li>
-                  <strong>Parallel restores</strong>: Utilize multiple CPU cores
-                  to speed up restoration of large backups.
-                </li>
-                <li>
-                  <strong>Cross-version compatibility</strong>: Restore backups
-                  to different PostgreSQL versions when needed.
+                  <strong>Cross-version compatibility</strong>: Logical
+                  backups can be restored to different PostgreSQL versions.
                 </li>
               </ul>
 
@@ -369,17 +396,15 @@ export default function DatabasusVsBarmanPage() {
 
               <div className="rounded-lg border border-[#ffffff20] bg-[#1f2937] px-4 pt-4 my-6">
                 <p className="text-gray-300 m-0">
-                  <strong className="text-amber-400">Note:</strong> For most
-                  applications, restoring to the nearest hour or day (as
-                  Databasus provides) is sufficient. Second-precise PITR is
-                  typically only required for mission-critical financial or
-                  transactional systems where every transaction must be
-                  recoverable.{" "}
+                  <strong className="text-amber-400">Note:</strong> Both
+                  tools support PITR. Barman additionally offers standby
+                  creation from backups and SSH-based remote recovery to other
+                  servers, which can be valuable for high availability setups.{" "}
                   <a
-                    href="/faq#why-no-pitr"
+                    href="/faq#pitr"
                     className="text-blue-400 hover:text-blue-300"
                   >
-                    Learn why Databasus doesn&apos;t support PITR →
+                    Learn how Databasus supports PITR →
                   </a>
                 </p>
               </div>
@@ -714,8 +739,9 @@ export default function DatabasusVsBarmanPage() {
                     etc.
                   </li>
                   <li>
-                    Restoring to any hour or day meets your recovery
-                    requirements
+                    You want to manage backups for multiple databases from a
+                    single dashboard with scheduling, notifications and team
+                    features
                   </li>
                   <li>
                     You want quick setup with minimal PostgreSQL expertise
@@ -734,16 +760,19 @@ export default function DatabasusVsBarmanPage() {
                 </p>
                 <ul className="text-white mb-0">
                   <li>
-                    You require second-precise Point-in-Time Recovery for
-                    mission-critical self-hosted systems
+                    You need rsync-based incremental backups (file-level
+                    diffing) for reduced transfer time
                   </li>
                   <li>
-                    You need centralized management of multiple self-hosted
-                    PostgreSQL servers from a dedicated backup server
+                    You need streaming replication integration for real-time
+                    WAL archiving
                   </li>
                   <li>
-                    WAL archiving and streaming replication integration is
-                    essential
+                    You need Barman-to-Barman geographical redundancy
+                  </li>
+                  <li>
+                    You need standby creation from backups for high
+                    availability setups
                   </li>
                   <li>
                     You&apos;re comfortable with command-line tools and
@@ -752,24 +781,19 @@ export default function DatabasusVsBarmanPage() {
                   <li>
                     Your organization has dedicated DBA expertise available
                   </li>
-                  <li>You need Barman-to-Barman geographical redundancy</li>
-                  <li>
-                    You&apos;re building a database platform and need to backup
-                    customer databases with PITR capabilities
-                  </li>
                 </ul>
               </div>
 
               <p>
-                For most use cases, from individual projects to enterprise
-                deployments, Databasus provides the right balance of power and
-                usability — and works seamlessly with both self-hosted and
-                cloud-managed databases. Databasus is suitable for comprehensive
-                backup management, not just backups. Barman remains the
-                specialized choice for organizations with strict PITR
-                requirements on self-hosted infrastructure and dedicated DBA
-                teams, or for teams building database platforms that need to
-                provide PITR capabilities to their customers.
+                Both tools support physical backups, WAL archiving and
+                PITR. Databasus provides the right balance of power and
+                usability with its web interface, team features and support
+                for both logical and physical backups — working seamlessly
+                with both self-hosted and cloud-managed databases. Barman
+                remains the specialized choice for organizations that need
+                rsync-based incremental backups, streaming replication
+                integration, Barman-to-Barman geo-redundancy or standby
+                creation from backups.
               </p>
             </article>
           </div>

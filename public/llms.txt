@@ -26,6 +26,9 @@
 - Retention policies: time period, count, GFS (Grandfather-Father-Son) and size limits
 - Suitable for single developers, DevOps teams, organizations, startups, system administrators and IT departments
 - Supports multiple databases: PostgreSQL, MySQL, MariaDB and MongoDB
+- Backup types: logical, physical and incremental with WAL archiving
+- Point-in-Time Recovery (PITR) for disaster recovery with near-zero data loss
+- Connection modes: remote (over network, no agent needed) and agent (for closed networks and physical/incremental backups)
 
 ## Supported Databases
 
@@ -33,6 +36,17 @@
 - MySQL
 - MariaDB
 - MongoDB
+
+## Backup Types
+
+- **Logical**: Native dump of the database in its engine-specific binary format. Compressed and streamed directly to storage with no intermediate files. Works via remote connection — no agent needed. A modern replacement for pg_dump with scheduling, encryption and UI
+- **Physical**: File-level copy of the entire database cluster. Faster backup and restore for large datasets compared to logical dumps. Requires agent
+- **Incremental**: Physical base backup combined with continuous WAL segment archiving. Enables Point-in-Time Recovery (PITR) — restore to any second between backups. Designed for disaster recovery and near-zero data loss requirements. Requires agent
+
+## Connection Types
+
+- **Remote**: Databasus connects directly to the database over the network. No agent or additional software required. Works with cloud-managed databases (AWS RDS, Google Cloud SQL, Azure Database) and any publicly accessible or network-reachable database. Ideal for simple scheduled backups
+- **Agent**: A lightweight Databasus agent runs alongside the database and connects to the Databasus instance. The database never needs to be exposed publicly. Enables physical and incremental backups with WAL archiving and PITR. Suitable for closed networks, host-installed databases, Docker containers and scenarios requiring incremental backups or disaster recovery. Because the agent connects to Databasus, you can manage incremental backups for many databases from a single dashboard
 
 ## Documentation
 
@@ -58,7 +72,7 @@ Content: Detailed privacy policy explaining how Databasus respects user privacy 
 
 ### FAQ - Frequently Asked Questions
 URL: /faq
-Content: Frequently asked questions about Databasus. Includes questions about backup formats, installation directory, PITR support and AI usage in development.
+Content: Frequently asked questions about Databasus. Includes questions about backup formats, installation directory, backup types, PITR, disaster recovery, connection modes and AI usage in development.
 
 #### How to backup localhost databases
 URL: /faq/localhost
@@ -188,6 +202,10 @@ Databasus is suitable for:
 
 ## Backup Features
 
+- **Logical Backups**: Native database dumps via remote connection, no agent needed
+- **Physical Backups**: File-level copy of the database cluster for faster backup and restore of large datasets (requires agent)
+- **Incremental Backups with WAL Archiving**: Continuous WAL segment archiving with Point-in-Time Recovery (requires agent)
+- **Point-in-Time Recovery (PITR)**: Restore to any second between backups for disaster recovery and near-zero data loss
 - **Compression**: Balanced compression with 4-8x size reduction
 - **Scheduling**: Flexible scheduling with exact time specification
 - **Health Checks**: Configurable database monitoring
@@ -209,7 +227,7 @@ Databasus supports flexible retention policies to automatically manage backup st
 ## FAQ
 
 ### How is Databasus different from PgBackRest, Barman or pg_dump?
-Databasus is a tool to manage backups of multiple databases. It not only dump DB like other tools, but also provides a modern, user-friendly web interface instead of complex configuration files and command-line tools. While PgBackRest and Barman require extensive configuration and command-line expertise suitable for single DB only. Databasus offers intuitive point-and-click setup. Unlike raw pg_dump scripts, it includes built-in scheduling, compression, multiple storage destinations, health monitoring and real-time notifications - all managed through a simple web UI. It's the UX-friendly alternative for developers and DevOps teams who want powerful backup capabilities without the complexity.
+Databasus prefers simplicity — it provides a modern web interface to manage backups for many databases at once, with built-in scheduling, compression, multiple storage destinations, health monitoring and real-time notifications. Unlike PgBackRest and Barman which require extensive configuration and command-line expertise for a single database, Databasus offers intuitive point-and-click setup for multiple databases. At the same time, Databasus also works in agent mode — similar to WAL-G or pgBackRest — for disaster recovery with WAL archiving and Point-in-Time Recovery. The agent connects from closed networks to the Databasus instance, so databases that are not publicly exposed can still be backed up and managed from a single dashboard.
 
 ### Which databases does Databasus support?
 Databasus supports PostgreSQL, MySQL, MariaDB and MongoDB. However, Databasus was originally created specifically for PostgreSQL and maintains its primary focus on it — providing 100% excellent support and maximum efficiency for PostgreSQL backups. While MySQL, MariaDB and MongoDB are fully supported, PostgreSQL remains the core priority with the most optimized features and ongoing development.
@@ -223,14 +241,8 @@ We have detailed comparison pages for popular backup tools:
 - Databasus vs pgBackWeb: /databasus-vs-pgbackweb
 Each comparison explains the key differences, pros and cons and helps you choose the right tool for your needs.
 
-### Why doesn't Databasus support PITR (Point-in-Time Recovery)?
-Databasus intentionally focuses on logical backups rather than PITR for several practical reasons:
-1. Complex setup requirements — PITR tools typically need to be installed on the same server as your database, requiring direct filesystem access and careful configuration
-2. Restoration limitations — incremental backups cannot be restored without direct access to the database storage drive
-3. Cloud incompatibility — managed cloud databases (AWS RDS, Google Cloud SQL, Azure) don't allow restoring external PITR backups, making them useless for cloud-hosted PostgreSQL
-4. Built-in cloud PITR — cloud providers already offer native PITR capabilities, and even they typically default to hourly or daily granularity
-5. Practical sufficiency — for 99% of projects, hourly or daily logical backups provide adequate recovery points without the operational complexity of WAL archiving
-So instead of second-by-second restoration complexity, Databasus prioritizes an intuitive UX for individuals and teams, making it the most reliable tool for day to day use
+### What backup types does Databasus support?
+Databasus supports logical, physical, WAL archiving and Point-in-Time Recovery (PITR). In remote mode, Databasus connects to the database over the network and performs logical backups — no agent needed. This is ideal for cloud-managed databases and simple scheduled backups. In agent mode, a lightweight agent runs alongside the database and connects to the Databasus instance, enabling physical backups with continuous WAL archiving and PITR — designed for disaster recovery and near-zero data loss. Because the agent connects to Databasus, you can manage incremental backups for many databases from a single dashboard — unlike standalone tools like WAL-G or pgBackRest where each database is managed separately. Databasus suits both those who want simple remote backups and those who need a solid disaster recovery tool.
 
 ### Backup Schedules
 Hourly, daily, weekly, monthly or cron cycles with exact run time specification (e.g., 04:00). Weekly schedules support specific weekdays, monthly schedules support specific calendar days.
@@ -278,5 +290,5 @@ You can join our large community of developers, DBAs and DevOps engineers at htt
 
 ## Keywords
 
-PostgreSQL, MySQL, MariaDB, MongoDB, backup, monitoring, database, scheduled backups, Docker, self-hosted, open source, S3, Google Drive, Slack notifications, Discord, DevOps, database monitoring, pg_dump, database restore, Cloudflare R2, Microsoft Teams, health checks, compression, automation, encryption, AES-256-GCM, backup encryption, enterprise security, read-only database access, data protection, secure backups, sensitive data encryption, security audit, least privilege, Kubernetes, Helm, K8s, StatefulSet, ingress
+PostgreSQL, MySQL, MariaDB, MongoDB, backup, monitoring, database, scheduled backups, Docker, self-hosted, open source, S3, Google Drive, Slack notifications, Discord, DevOps, database monitoring, pg_dump, database restore, Cloudflare R2, Microsoft Teams, health checks, compression, automation, encryption, AES-256-GCM, backup encryption, enterprise security, read-only database access, data protection, secure backups, sensitive data encryption, security audit, least privilege, Kubernetes, Helm, K8s, StatefulSet, ingress, WAL, WAL archiving, PITR, Point-in-Time Recovery, physical backup, incremental backup, logical backup, disaster recovery, agent mode, remote backup
 
