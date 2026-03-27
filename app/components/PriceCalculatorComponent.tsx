@@ -138,8 +138,8 @@ export function PriceCalculatorComponent() {
               {/* Single backup size slider */}
               <div className="mb-4">
                 <div className="flex items-baseline mb-1">
-                  <label className=" md:text-base font-medium min-w-[185px]">
-                    Single backup size
+                  <label className=" md:text-base font-medium min-w-[210px]">
+                    If your single backup size is
                   </label>
 
                   <span className=" md:text-base font-bold text-blue-500">
@@ -148,7 +148,7 @@ export function PriceCalculatorComponent() {
                 </div>
 
                 <p className="mb-2 text-gray-400 flex items-center">
-                  <span className="flex items-center gap-1 min-w-[175px]">
+                  <span className="flex items-center gap-1 min-w-[200px]">
                     Approximate DB size{" "}
                     <span className="relative inline-block group">
                       <svg
