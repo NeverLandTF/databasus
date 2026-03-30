@@ -201,10 +201,10 @@ export default function MysqlBackupPage() {
                 Docs
               </a>
               <a
-                href="/contribute"
+                href="/cloud"
                 className="py-2 hover:text-gray-300 transition-colors"
               >
-                Contribute
+                Cloud
               </a>
               <a
                 href="https://t.me/databasus_community"
@@ -279,10 +279,10 @@ export default function MysqlBackupPage() {
               Discord or Telegram when backups complete
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-2 max-w-[400px] mx-auto pb-0 sm:pb-[50px] lg:pb-0">
               <a
                 href="#installation"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-3"
               >
                 <span>Configure in 2 minutes</span>
                 <svg
@@ -304,7 +304,7 @@ export default function MysqlBackupPage() {
                 href="https://github.com/databasus/databasus"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity order-4 sm:order-4"
               >
                 <svg
                   aria-hidden={true}
@@ -331,6 +331,37 @@ export default function MysqlBackupPage() {
 
                 <span>GitHub</span>
               </a>
+
+              <div className="w-full flex items-center gap-3 order-2 sm:max-w-[364px]">
+                <div className="flex-1 h-px bg-[#ffffff20]" />
+                <span className="text-sm text-gray-400">or</span>
+                <div className="flex-1 h-px bg-[#ffffff20]" />
+              </div>
+
+              <a
+                href="https://app.databasus.com"
+                target="_blank"
+                className="w-full sm:max-w-[364px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
+              >
+                Use cloud from $9/mo
+              </a>
+
+              <img
+                src="/images/index/arrow.svg"
+                className="absolute hidden rotate-30 lg:block lg:ml-[445px] lg:mt-[-90px] lg:rotate-0"
+                alt="Arrow"
+              />
+
+              <div className="text-sm hidden max-w-[250px] text-left lg:block lg:absolute lg:ml-[700px] lg:mt-[-30px] text-gray-200 order-6">
+                You can always switch to self-hosted, because we are{" "}
+                <a
+                  href="https://github.com/databasus/databasus?tab=readme-ov-file#you-have-a-cloud-version--are-you-truly-open-source"
+                  target="_blank"
+                  className="underline"
+                >
+                  truly open source
+                </a>
+              </div>
             </div>
           </div>
 

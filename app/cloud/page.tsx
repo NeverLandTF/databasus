@@ -103,7 +103,7 @@ export default function Index() {
             </div>
 
             <h1 className="text-2xl sm:text-4xl sm:max-w-[300px] md:text-4xl leading-tight font-bold mb-4 md:mb-6 mx-auto md:max-w-[600px]">
-              Databasus Cloud
+              Databasus cloud
             </h1>
 
             <p className="text-sm sm:text-lg text-gray-200 max-w-[550px] mx-auto mb-6 md:mb-10 px-2">
@@ -113,36 +113,17 @@ export default function Index() {
             </p>
 
             <div>
-              <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-2 max-w-[400px] mx-auto pb-0 sm:pb-[50px] lg:pb-0 lg:[0px]">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-2 sm:max-w-[300px] mx-auto pb-0 sm:pb-[50px] lg:pb-0 lg:[0px]">
                 <CloudDashboardButton variant="hero" />
-
-                <a
-                  href="#pricing"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-12 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-white text-black hover:opacity-70 transition-opacity order-2"
-                >
-                  <span>Pricing</span>
-                </a>
 
                 <a
                   href="https://databasus.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:max-w-[356px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-3"
+                  className="w-full inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-3"
                 >
                   Go back to self-hosted
                 </a>
-
-                <img
-                  src="/images/cloud/arrow.svg"
-                  className="absolute hidden sm:block mt-[200px] ml-[-210px] sm:mt-[161px] sm:ml-[-260px] rotate-30 lg:ml-[435px] lg:mt-[70px] lg:rotate-0"
-                  alt="Arrow"
-                />
-
-                <div className="text-sm sm:ml-[75px] sm:mt-[180px] max-w-[250px] sm:text-left sm:absolute lg:ml-[690px] lg:mt-[5px] text-gray-200 order-4 sm:order-0">
-                  You can always switch back to self-hosted, no vendor lock-in
-                  to the cloud
-                </div>
               </div>
             </div>
           </div>
@@ -232,17 +213,23 @@ export default function Index() {
             <CloudFaqItem
               number="1"
               question="Can I increase or decrease storage later?"
-              answer={"Yes, you can adjust your storage at any time. If you need more space as your databases grow, simply upgrade your plan and the additional storage becomes available immediately.\n\nLikewise, if you find you are using less than expected, you can downgrade to a smaller plan to reduce costs. There are no penalties or lock-in periods for changing your storage allocation."}
+              answer={
+                "Yes, you can adjust your storage at any time. If you need more space as your databases grow, simply upgrade your plan and the additional storage becomes available immediately.\n\nLikewise, if you find you are using less than expected, you can downgrade to a smaller plan to reduce costs. There are no penalties or lock-in periods for changing your storage allocation."
+              }
             />
             <CloudFaqItem
               number="2"
               question="Are there any differences between Databasus Cloud and self-hosted?"
-              answer={"No. Databasus Cloud offers the exact same features as the self-hosted version — there are no paywalled extras, no premium tiers and no hidden limitations. Databasus is fully open source under the Apache 2.0 license, not an 'open core' model.\n\nThe cloud option simply means we handle the infrastructure, uptime and updates for you, so you can focus on your work instead of maintaining servers. You can switch between cloud and self-hosted at any time with no vendor lock-in."}
+              answer={
+                "No. Databasus Cloud offers the exact same features as the self-hosted version — there are no paywalled extras, no premium tiers and no hidden limitations. Databasus is fully open source under the Apache 2.0 license, not an 'open core' model.\n\nThe cloud option simply means we handle the infrastructure, uptime and updates for you, so you can focus on your work instead of maintaining servers. You can switch between cloud and self-hosted at any time with no vendor lock-in."
+              }
             />
             <CloudFaqItem
               number="3"
               question="How can I reduce the cost of Databasus Cloud?"
-              answer={"The most effective way to lower your cloud bill is to use GFS (Grandfather-Father-Son) retention policy. GFS keeps daily, weekly, monthly and yearly backups on a rotating schedule. It dramatically reduces the total number of stored backups compared to keeping every single one.\n\nFor example, instead of storing 365 daily backups for a full year, GFS might keep 7 daily, 4 weekly, 12 monthly and 1 yearly — just 24 backups covering the same time span. This means you need significantly less storage, which directly lowers your monthly price."}
+              answer={
+                "The most effective way to lower your cloud bill is to use GFS (Grandfather-Father-Son) retention policy. GFS keeps daily, weekly, monthly and yearly backups on a rotating schedule. It dramatically reduces the total number of stored backups compared to keeping every single one.\n\nFor example, instead of storing 365 daily backups for a full year, GFS might keep 7 daily, 4 weekly, 12 monthly and 1 yearly — just 24 backups covering the same time span. This means you need significantly less storage, which directly lowers your monthly price."
+              }
             />
           </div>
         </div>

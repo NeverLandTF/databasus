@@ -270,12 +270,14 @@ export default function Index() {
               >
                 Docs
               </a>
+              
               <a
-                href="/contribute"
+                href="/cloud"
                 className="py-2 hover:text-gray-300 transition-colors"
               >
-                Contribute
+                Cloud
               </a>
+
               <a
                 href="https://t.me/databasus_community"
                 target="_blank"
@@ -354,7 +356,7 @@ export default function Index() {
               <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-2 max-w-[400px] mx-auto pb-0 sm:pb-[50px] lg:pb-0 lg:[0px]">
                 <a
                   href="#installation"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-3"
                 >
                   <span>Configure in 2 minutes</span>
                   <svg
@@ -376,7 +378,7 @@ export default function Index() {
                   href="https://github.com/databasus/databasus"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity order-3 sm:order-2"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity order-4 sm:order-4"
                 >
                   <svg
                     aria-hidden={true}
@@ -404,26 +406,27 @@ export default function Index() {
                   <span>GitHub</span>
                 </a>
 
-                <div className="w-full flex items-center gap-3 order-4 sm:max-w-[364px]">
+                <div className="w-full flex items-center gap-3 order-2 sm:max-w-[364px]">
                   <div className="flex-1 h-px bg-[#ffffff20]" />
                   <span className="text-sm text-gray-400">or</span>
                   <div className="flex-1 h-px bg-[#ffffff20]" />
                 </div>
 
                 <a
-                  href="/cloud"
-                  className="w-full sm:max-w-[364px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-5"
+                  href="https://app.databasus.com"
+                  target="_blank"
+                  className="w-full sm:max-w-[364px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
                 >
                   Use cloud from $9/mo
                 </a>
 
                 <img
-                  src="/images/cloud/arrow.svg"
-                  className="absolute hidden sm:block mt-[200px] ml-[-210px] sm:mt-[190px] sm:ml-[-260px] rotate-30 lg:ml-[445px] lg:mt-[90px] lg:rotate-0"
+                  src="/images/index/arrow.svg"
+                  className="absolute hidden rotate-30 lg:block lg:ml-[445px] lg:mt-[-90px] lg:rotate-0"
                   alt="Arrow"
                 />
 
-                <div className="text-sm sm:ml-[75px] sm:mt-[200px] max-w-[250px] text-center sm:text-left sm:absolute lg:ml-[690px] lg:mt-[25px] text-gray-200 order-6 sm:order-0">
+                <div className="text-sm hidden max-w-[250px] text-left lg:block lg:absolute lg:ml-[700px] lg:mt-[-30px] text-gray-200 order-6">
                   You can always switch to self-hosted, because we are{" "}
                   <a
                     href="https://github.com/databasus/databasus?tab=readme-ov-file#you-have-a-cloud-version--are-you-truly-open-source"
