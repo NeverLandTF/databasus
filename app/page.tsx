@@ -270,7 +270,7 @@ export default function Index() {
               >
                 Docs
               </a>
-              
+
               <a
                 href="/cloud"
                 className="py-2 hover:text-gray-300 transition-colors"
@@ -358,20 +358,7 @@ export default function Index() {
                   href="#installation"
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-3"
                 >
-                  <span>Configure in 2 minutes</span>
-                  <svg
-                    aria-hidden={true}
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
+                  Self-host via Docker
                 </a>
 
                 <a
@@ -406,7 +393,7 @@ export default function Index() {
                   <span>GitHub</span>
                 </a>
 
-                <div className="w-full flex items-center gap-3 order-2 sm:max-w-[364px]">
+                <div className="w-full flex items-center gap-3 order-2 sm:max-w-[312px]">
                   <div className="flex-1 h-px bg-[#ffffff20]" />
                   <span className="text-sm text-gray-400">or</span>
                   <div className="flex-1 h-px bg-[#ffffff20]" />
@@ -415,27 +402,23 @@ export default function Index() {
                 <a
                   href="https://app.databasus.com"
                   target="_blank"
-                  className="w-full sm:max-w-[364px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
+                  className="w-full sm:max-w-[312px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
                 >
-                  Use cloud without VPS (24x7 up)
-                </a>
-
-                <img
-                  src="/images/index/arrow.svg"
-                  className="absolute hidden rotate-30 lg:block lg:ml-[445px] lg:mt-[-90px] lg:rotate-0"
-                  alt="Arrow"
-                />
-
-                <div className="text-sm hidden max-w-[250px] text-left lg:block lg:absolute lg:ml-[700px] lg:mt-[-30px] text-gray-200 order-6">
-                  You can always switch to self-hosted, because we are{" "}
-                  <a
-                    href="https://github.com/databasus/databasus?tab=readme-ov-file#you-have-a-cloud-version--are-you-truly-open-source"
-                    target="_blank"
-                    className="underline"
+                  <span>Configure in 2 minutes</span>
+                  <svg
+                    aria-hidden={true}
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    truly open source
-                  </a>
-                </div>
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </a>
               </div>
             </div>
           </div>
