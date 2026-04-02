@@ -99,7 +99,7 @@ export default function Index() {
           {/* Content */}
           <div className="mb-8 md:mb-16 flex flex-col md:flex-row">
             <div className="w-full md:w-1/2 text-center md:text-left">
-              <h1 className="text-lg sm:text-2xl 2xl:text-3xl leading-tight font-bold mb-4 md:max-w-[580px]">
+              <h1 className="text-xl sm:text-2xl 2xl:text-3xl leading-tight font-bold mb-4 md:max-w-[580px]">
                 We host Databasus for you, you save time on VPS self-hosting.{" "}
                 <span className="underline decoration-2 underline-offset-2 sm:decoration-4 sm:underline-offset-4 decoration-[#0d6efd]">
                   Care about backups
