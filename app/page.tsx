@@ -403,7 +403,7 @@ export default function Index() {
                   href="/cloud"
                   className="w-full sm:max-w-[312px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
                 >
-                  <span>Configure in 2 minutes</span>
+                  <span>Host in cloud from $9/mo</span>
                   <svg
                     aria-hidden={true}
                     width="20"

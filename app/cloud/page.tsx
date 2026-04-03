@@ -113,7 +113,7 @@ export default function Index() {
                 <span className="underline decoration-2 underline-offset-2 decoration-[#0d6efd] font-bold">
                   You pay only for used storage
                 </span>{" "}
-                (that is ~64% cheaper than VPS) and can focus on your work
+                (starts from $9 that is ~64% cheaper than VPS) and can focus on your work
                 instead of maintaining servers
               </p>
 
