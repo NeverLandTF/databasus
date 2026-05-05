@@ -377,7 +377,7 @@ jobs:
           cd backend
           go install github.com/pressly/goose/v3/cmd/goose@v3.24.3
           set -a && . ../.env && set +a
-          goose -dir ./migrations postgres "$GOOSE_TEST_DBSTRING" up
+          GOOSE_DBSTRING="$GOOSE_TEST_DBSTRING" goose -dir ./migrations up
 
       - name: Run Go tests
         run: |
