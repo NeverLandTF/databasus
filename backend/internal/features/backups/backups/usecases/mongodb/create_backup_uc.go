@@ -190,6 +190,10 @@ func (uc *CreateMongodbBackupUsecase) streamToStorage(
 			backup.FileName,
 			storageReader,
 		)
+		if saveErr != nil {
+			_ = storageReader.CloseWithError(saveErr)
+			cancel()
+		}
 		saveErrCh <- saveErr
 	}()
 
@@ -213,6 +217,16 @@ func (uc *CreateMongodbBackupUsecase) streamToStorage(
 	copyErr := <-copyResultCh
 	bytesWritten := <-bytesWrittenCh
 	waitErr := cmd.Wait()
+
+	select {
+	case earlySaveErr := <-saveErrCh:
+		if earlySaveErr != nil {
+			_ = uc.closeWriters(encryptionWriter, storageWriter)
+			return nil, fmt.Errorf("save to storage: %w", earlySaveErr)
+		}
+		saveErrCh <- nil
+	default:
+	}
 
 	select {
 	case <-ctx.Done():

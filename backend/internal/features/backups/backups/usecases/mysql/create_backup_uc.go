@@ -247,6 +247,10 @@ func (uc *CreateMysqlBackupUsecase) streamToStorage(
 			backup.FileName,
 			storageReader,
 		)
+		if saveErr != nil {
+			_ = storageReader.CloseWithError(saveErr)
+			cancel()
+		}
 		saveErrCh <- saveErr
 	}()
 
@@ -270,6 +274,17 @@ func (uc *CreateMysqlBackupUsecase) streamToStorage(
 	copyErr := <-copyResultCh
 	bytesWritten := <-bytesWrittenCh
 	waitErr := cmd.Wait()
+
+	select {
+	case earlySaveErr := <-saveErrCh:
+		if earlySaveErr != nil {
+			_ = zstdWriter.Close()
+			_ = uc.closeWriters(encryptionWriter, storageWriter)
+			return nil, fmt.Errorf("save to storage: %w", earlySaveErr)
+		}
+		saveErrCh <- nil
+	default:
+	}
 
 	select {
 	case <-ctx.Done():
