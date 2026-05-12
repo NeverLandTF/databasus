@@ -98,11 +98,10 @@ func (uc *CreateMongodbBackupUsecase) buildMongodumpArgs(
 	mdb *mongodbtypes.MongodbDatabase,
 	password string,
 ) []string {
-	uri := mdb.BuildMongodumpURI(password)
+	uri := mdb.BuildConnectionURI(password)
 
 	args := []string{
 		"--uri=" + uri,
-		"--db=" + mdb.Database,
 		"--archive",
 		"--gzip",
 	}

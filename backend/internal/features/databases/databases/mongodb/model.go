@@ -103,7 +103,7 @@ func (m *MongodbDatabase) TestConnection(
 		return fmt.Errorf("failed to decrypt password: %w", err)
 	}
 
-	uri := m.buildConnectionURI(password)
+	uri := m.BuildConnectionURI(password)
 
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -155,7 +155,7 @@ func (m *MongodbDatabase) GetRawDbSizeMb(
 		return 0, fmt.Errorf("failed to decrypt password: %w", err)
 	}
 
-	uri := m.buildConnectionURI(password)
+	uri := m.BuildConnectionURI(password)
 
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -238,7 +238,7 @@ func (m *MongodbDatabase) PopulateVersion(
 		return fmt.Errorf("failed to decrypt password: %w", err)
 	}
 
-	uri := m.buildConnectionURI(password)
+	uri := m.BuildConnectionURI(password)
 
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -270,7 +270,7 @@ func (m *MongodbDatabase) IsUserReadOnly(
 		return false, nil, fmt.Errorf("failed to decrypt password: %w", err)
 	}
 
-	uri := m.buildConnectionURI(password)
+	uri := m.BuildConnectionURI(password)
 
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -456,7 +456,7 @@ func (m *MongodbDatabase) CreateReadOnlyUser(
 		return "", "", fmt.Errorf("failed to decrypt password: %w", err)
 	}
 
-	uri := m.buildConnectionURI(password)
+	uri := m.BuildConnectionURI(password)
 
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -511,52 +511,24 @@ func (m *MongodbDatabase) CreateReadOnlyUser(
 	return "", "", errors.New("failed to generate unique username after 3 attempts")
 }
 
-// BuildMongodumpURI builds a URI suitable for mongodump (without database in path)
-func (m *MongodbDatabase) BuildMongodumpURI(password string) string {
-	authDB := m.AuthDatabase
-	if authDB == "" {
-		authDB = "admin"
-	}
-
-	extraParams := ""
-	if m.IsHttps {
-		extraParams += "&tls=true&tlsInsecure=true"
-	} else {
-		extraParams += "&tls=false"
-	}
-	if m.IsDirectConnection {
-		extraParams += "&directConnection=true"
-	}
-
-	if m.IsSrv {
-		return fmt.Sprintf(
-			"mongodb+srv://%s:%s@%s/?authSource=%s&connectTimeoutMS=15000%s",
-			url.QueryEscape(m.Username),
-			url.QueryEscape(password),
-			m.Host,
-			authDB,
-			extraParams,
-		)
-	}
-
-	port := 27017
-	if m.Port != nil {
-		port = *m.Port
-	}
-
-	return fmt.Sprintf(
-		"mongodb://%s:%s@%s:%d/?authSource=%s&connectTimeoutMS=15000%s",
-		url.QueryEscape(m.Username),
-		url.QueryEscape(password),
-		m.Host,
-		port,
-		authDB,
-		extraParams,
-	)
+// BuildConnectionURI builds a MongoDB connection URI with the database embedded
+// in the path. Used by the Go driver and the bundled mongodump invocation —
+// embedding the database in the URI lets us drop `--db`, which stricter
+// mongodump versions reject when combined with `--uri`.
+func (m *MongodbDatabase) BuildConnectionURI(password string) string {
+	return m.buildURI(password, true)
 }
 
-// buildConnectionURI builds a MongoDB connection URI
-func (m *MongodbDatabase) buildConnectionURI(password string) string {
+// BuildRestoreURI builds a connection URI without the database in the path.
+// mongorestore treats a URI-embedded database as an implicit target rewrite
+// that collides with --nsFrom / --nsTo, silently producing a zero-document
+// restore. Restore must use a database-less URI and rely on the namespace
+// flags exclusively.
+func (m *MongodbDatabase) BuildRestoreURI(password string) string {
+	return m.buildURI(password, false)
+}
+
+func (m *MongodbDatabase) buildURI(password string, includeDatabase bool) string {
 	authDB := m.AuthDatabase
 	if authDB == "" {
 		authDB = "admin"
@@ -570,6 +542,11 @@ func (m *MongodbDatabase) buildConnectionURI(password string) string {
 	}
 	if m.IsDirectConnection {
 		extraParams += "&directConnection=true"
+	}
+
+	dbPath := ""
+	if includeDatabase {
+		dbPath = url.PathEscape(m.Database)
 	}
 
 	if m.IsSrv {
@@ -578,8 +555,8 @@ func (m *MongodbDatabase) buildConnectionURI(password string) string {
 			url.QueryEscape(m.Username),
 			url.QueryEscape(password),
 			m.Host,
-			m.Database,
-			authDB,
+			dbPath,
+			url.QueryEscape(authDB),
 			extraParams,
 		)
 	}
@@ -595,8 +572,8 @@ func (m *MongodbDatabase) buildConnectionURI(password string) string {
 		url.QueryEscape(password),
 		m.Host,
 		port,
-		m.Database,
-		authDB,
+		dbPath,
+		url.QueryEscape(authDB),
 		extraParams,
 	)
 }

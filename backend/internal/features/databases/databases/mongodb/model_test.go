@@ -533,7 +533,7 @@ func Test_BuildConnectionURI_WithSrvFormat_ReturnsCorrectUri(t *testing.T) {
 		IsSrv:        true,
 	}
 
-	uri := model.buildConnectionURI("testpass123")
+	uri := model.BuildConnectionURI("testpass123")
 
 	assert.Contains(t, uri, "mongodb+srv://")
 	assert.Contains(t, uri, "testuser")
@@ -558,7 +558,7 @@ func Test_BuildConnectionURI_WithStandardFormat_ReturnsCorrectUri(t *testing.T) 
 		IsSrv:        false,
 	}
 
-	uri := model.buildConnectionURI("testpass123")
+	uri := model.BuildConnectionURI("testpass123")
 
 	assert.Contains(t, uri, "mongodb://")
 	assert.Contains(t, uri, "testuser")
@@ -582,59 +582,9 @@ func Test_BuildConnectionURI_WithNullPort_UsesDefault(t *testing.T) {
 		IsSrv:        false,
 	}
 
-	uri := model.buildConnectionURI("testpass123")
+	uri := model.BuildConnectionURI("testpass123")
 
 	assert.Contains(t, uri, "localhost:27017")
-}
-
-func Test_BuildMongodumpURI_WithSrvFormat_ReturnsCorrectUri(t *testing.T) {
-	port := 27017
-	model := &MongodbDatabase{
-		Host:         "cluster0.example.mongodb.net",
-		Port:         &port,
-		Username:     "testuser",
-		Password:     "testpass123",
-		Database:     "mydb",
-		AuthDatabase: "admin",
-		IsHttps:      false,
-		IsSrv:        true,
-	}
-
-	uri := model.BuildMongodumpURI("testpass123")
-
-	assert.Contains(t, uri, "mongodb+srv://")
-	assert.Contains(t, uri, "testuser")
-	assert.Contains(t, uri, "testpass123")
-	assert.Contains(t, uri, "cluster0.example.mongodb.net")
-	assert.Contains(t, uri, "/?authSource=admin")
-	assert.Contains(t, uri, "connectTimeoutMS=15000")
-	assert.NotContains(t, uri, ":27017")
-	assert.NotContains(t, uri, "/mydb")
-}
-
-func Test_BuildMongodumpURI_WithStandardFormat_ReturnsCorrectUri(t *testing.T) {
-	port := 27017
-	model := &MongodbDatabase{
-		Host:         "localhost",
-		Port:         &port,
-		Username:     "testuser",
-		Password:     "testpass123",
-		Database:     "mydb",
-		AuthDatabase: "admin",
-		IsHttps:      false,
-		IsSrv:        false,
-	}
-
-	uri := model.BuildMongodumpURI("testpass123")
-
-	assert.Contains(t, uri, "mongodb://")
-	assert.Contains(t, uri, "testuser")
-	assert.Contains(t, uri, "testpass123")
-	assert.Contains(t, uri, "localhost:27017")
-	assert.Contains(t, uri, "/?authSource=admin")
-	assert.Contains(t, uri, "connectTimeoutMS=15000")
-	assert.NotContains(t, uri, "mongodb+srv://")
-	assert.NotContains(t, uri, "/mydb")
 }
 
 func Test_Validate_SrvConnection_AllowsNullPort(t *testing.T) {
@@ -669,7 +619,7 @@ func Test_BuildConnectionURI_WithDirectConnection_ReturnsCorrectUri(t *testing.T
 		IsDirectConnection: true,
 	}
 
-	uri := model.buildConnectionURI("testpass123")
+	uri := model.BuildConnectionURI("testpass123")
 
 	assert.Contains(t, uri, "mongodb://")
 	assert.Contains(t, uri, "directConnection=true")
@@ -691,30 +641,9 @@ func Test_BuildConnectionURI_WithoutDirectConnection_OmitsParam(t *testing.T) {
 		IsDirectConnection: false,
 	}
 
-	uri := model.buildConnectionURI("testpass123")
+	uri := model.BuildConnectionURI("testpass123")
 
 	assert.NotContains(t, uri, "directConnection")
-}
-
-func Test_BuildMongodumpURI_WithDirectConnection_ReturnsCorrectUri(t *testing.T) {
-	port := 27017
-	model := &MongodbDatabase{
-		Host:               "mongo.example.local",
-		Port:               &port,
-		Username:           "testuser",
-		Password:           "testpass123",
-		Database:           "mydb",
-		AuthDatabase:       "admin",
-		IsHttps:            false,
-		IsSrv:              false,
-		IsDirectConnection: true,
-	}
-
-	uri := model.BuildMongodumpURI("testpass123")
-
-	assert.Contains(t, uri, "mongodb://")
-	assert.Contains(t, uri, "directConnection=true")
-	assert.NotContains(t, uri, "/mydb")
 }
 
 func Test_BuildConnectionURI_WithDirectConnectionAndTls_ReturnsBothParams(t *testing.T) {
@@ -731,7 +660,7 @@ func Test_BuildConnectionURI_WithDirectConnectionAndTls_ReturnsBothParams(t *tes
 		IsDirectConnection: true,
 	}
 
-	uri := model.buildConnectionURI("testpass123")
+	uri := model.BuildConnectionURI("testpass123")
 
 	assert.Contains(t, uri, "directConnection=true")
 	assert.Contains(t, uri, "tls=true")
@@ -770,7 +699,7 @@ func Test_BuildConnectionURI_WhenIsHttpsFalse_ContainsTlsFalse(t *testing.T) {
 		IsSrv:        false,
 	}
 
-	uri := model.buildConnectionURI("testpass123")
+	uri := model.BuildConnectionURI("testpass123")
 
 	assert.Contains(t, uri, "tls=false")
 	assert.NotContains(t, uri, "tls=true")
@@ -789,7 +718,7 @@ func Test_BuildConnectionURI_WhenSrvAndIsHttpsFalse_ContainsTlsFalse(t *testing.
 		IsSrv:        true,
 	}
 
-	uri := model.buildConnectionURI("testpass123")
+	uri := model.BuildConnectionURI("testpass123")
 
 	assert.Contains(t, uri, "mongodb+srv://")
 	assert.Contains(t, uri, "tls=false")
@@ -797,7 +726,7 @@ func Test_BuildConnectionURI_WhenSrvAndIsHttpsFalse_ContainsTlsFalse(t *testing.
 	assert.NotContains(t, uri, "tlsInsecure")
 }
 
-func Test_BuildMongodumpURI_WhenIsHttpsFalse_ContainsTlsFalse(t *testing.T) {
+func Test_BuildRestoreURI_OmitsDatabaseFromPath(t *testing.T) {
 	port := 27017
 	model := &MongodbDatabase{
 		Host:         "localhost",
@@ -810,14 +739,15 @@ func Test_BuildMongodumpURI_WhenIsHttpsFalse_ContainsTlsFalse(t *testing.T) {
 		IsSrv:        false,
 	}
 
-	uri := model.BuildMongodumpURI("testpass123")
+	uri := model.BuildRestoreURI("testpass123")
 
-	assert.Contains(t, uri, "tls=false")
-	assert.NotContains(t, uri, "tls=true")
-	assert.NotContains(t, uri, "tlsInsecure")
+	assert.Contains(t, uri, "mongodb://")
+	assert.Contains(t, uri, "localhost:27017")
+	assert.Contains(t, uri, "/?authSource=admin")
+	assert.NotContains(t, uri, "/mydb")
 }
 
-func Test_BuildMongodumpURI_WhenSrvAndIsHttpsFalse_ContainsTlsFalse(t *testing.T) {
+func Test_BuildRestoreURI_WithSrvOmitsDatabase(t *testing.T) {
 	model := &MongodbDatabase{
 		Host:         "cluster0.example.mongodb.net",
 		Port:         nil,
@@ -829,12 +759,30 @@ func Test_BuildMongodumpURI_WhenSrvAndIsHttpsFalse_ContainsTlsFalse(t *testing.T
 		IsSrv:        true,
 	}
 
-	uri := model.BuildMongodumpURI("testpass123")
+	uri := model.BuildRestoreURI("testpass123")
 
 	assert.Contains(t, uri, "mongodb+srv://")
-	assert.Contains(t, uri, "tls=false")
-	assert.NotContains(t, uri, "tls=true")
-	assert.NotContains(t, uri, "tlsInsecure")
+	assert.Contains(t, uri, "/?authSource=admin")
+	assert.NotContains(t, uri, "/mydb")
+}
+
+func Test_BuildConnectionURI_WhenDatabaseHasSpecialChars_EscapesPathSegment(t *testing.T) {
+	port := 27017
+	model := &MongodbDatabase{
+		Host:         "localhost",
+		Port:         &port,
+		Username:     "testuser",
+		Password:     "testpass123",
+		Database:     "db/with#hash?and%percent",
+		AuthDatabase: "admin",
+		IsHttps:      false,
+		IsSrv:        false,
+	}
+
+	uri := model.BuildConnectionURI("testpass123")
+
+	assert.Contains(t, uri, "/db%2Fwith%23hash%3Fand%25percent?")
+	assert.NotContains(t, uri, "/db/with#hash?and%percent")
 }
 
 func Test_MapMongodbVersion_VersionMatrix_ReturnsExpected(t *testing.T) {

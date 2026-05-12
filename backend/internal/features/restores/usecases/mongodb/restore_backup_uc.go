@@ -90,7 +90,7 @@ func (uc *RestoreMongodbBackupUsecase) buildMongorestoreArgs(
 	password string,
 	sourceDatabase string,
 ) []string {
-	uri := mdb.BuildMongodumpURI(password)
+	uri := mdb.BuildRestoreURI(password)
 
 	args := []string{
 		"--uri=" + uri,
