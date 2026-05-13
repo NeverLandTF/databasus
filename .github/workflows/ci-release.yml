@@ -7,6 +7,9 @@ on:
     branches: ["**"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   lint-backend:
     if: github.ref != 'refs/heads/develop'
@@ -128,6 +131,27 @@ jobs:
           cd agent/backup
           go mod tidy
           git diff --exit-code go.mod go.sum || (echo "go mod tidy made changes, please run 'go mod tidy' and commit the changes" && exit 1)
+
+  dockerfile-scan:
+    if: github.ref != 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Trivy Dockerfile misconfiguration scan
+        run: trivy config --severity HIGH,CRITICAL --exit-code 1 Dockerfile
 
   test-frontend:
     if: github.ref != 'refs/heads/develop'
@@ -479,6 +503,22 @@ jobs:
           fi
           echo "index.html OK"
 
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Trivy scan dev image (CRITICAL, blocking)
+        run: trivy image --severity CRITICAL --ignore-unfixed --vuln-type os,library --exit-code 1 databasus-dev:smoke-${{ github.sha }}
+
+      - name: Trivy scan dev image (HIGH, advisory)
+        if: always()
+        run: trivy image --severity HIGH --ignore-unfixed --vuln-type os,library --exit-code 0 databasus-dev:smoke-${{ github.sha }}
+
       - name: Cleanup smoke container
         if: always()
         run: |
@@ -527,7 +567,7 @@ jobs:
   build-image:
     if: github.ref != 'refs/heads/develop'
     runs-on: ubuntu-latest
-    needs: [lint-backend, lint-frontend, lint-agent]
+    needs: [lint-backend, lint-frontend, lint-agent, dockerfile-scan]
     steps:
       - name: Clean workspace
         run: |
@@ -586,6 +626,22 @@ jobs:
             exit 1
           fi
           echo "index.html OK"
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Trivy scan release image (CRITICAL, blocking)
+        run: trivy image --severity CRITICAL --ignore-unfixed --vuln-type os,library --exit-code 1 databasus:smoke-${{ github.sha }}
+
+      - name: Trivy scan release image (HIGH, advisory)
+        if: always()
+        run: trivy image --severity HIGH --ignore-unfixed --vuln-type os,library --exit-code 0 databasus:smoke-${{ github.sha }}
 
       - name: Cleanup smoke container
         if: always()
