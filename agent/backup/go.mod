@@ -1,6 +1,6 @@
 module databasus-agent
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/go-resty/resty/v2 v2.17.2

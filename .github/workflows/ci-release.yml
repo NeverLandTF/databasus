@@ -15,7 +15,7 @@ jobs:
     if: github.ref != 'refs/heads/develop'
     runs-on: self-hosted
     container:
-      image: golang:1.26.2
+      image: golang:1.26.3
       volumes:
         - /runner-cache/go-pkg:/go/pkg/mod
         - /runner-cache/go-build:/root/.cache/go-build
@@ -108,7 +108,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
-          go-version: "1.26.2"
+          go-version: "1.26.3"
           cache-dependency-path: agent/backup/go.sum
 
       - name: Download Go modules
@@ -194,7 +194,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
-          go-version: "1.26.2"
+          go-version: "1.26.3"
           cache-dependency-path: agent/backup/go.sum
 
       - name: Download Go modules
@@ -258,7 +258,7 @@ jobs:
     runs-on: self-hosted
     needs: [lint-backend]
     container:
-      image: golang:1.26.2
+      image: golang:1.26.3
       options: --privileged -v /var/run/docker.sock:/var/run/docker.sock --add-host=host.docker.internal:host-gateway
       volumes:
         - /runner-cache/go-pkg:/go/pkg/mod
@@ -413,7 +413,7 @@ jobs:
       - name: Run database migrations
         run: |
           cd backend
-          go install github.com/pressly/goose/v3/cmd/goose@v3.24.3
+          go install github.com/pressly/goose/v3/cmd/goose@v3.27.1
           set -a && . ../.env && set +a
           GOOSE_DBSTRING="$GOOSE_TEST_DBSTRING" goose -dir ./migrations up
 
@@ -513,11 +513,11 @@ jobs:
           sudo apt-get install -y trivy
 
       - name: Trivy scan dev image (CRITICAL, blocking)
-        run: trivy image --severity CRITICAL --ignore-unfixed --vuln-type os,library --exit-code 1 databasus-dev:smoke-${{ github.sha }}
+        run: trivy image --severity CRITICAL --ignore-unfixed --pkg-types os,library --scanners vuln --exit-code 1 databasus-dev:smoke-${{ github.sha }}
 
       - name: Trivy scan dev image (HIGH, advisory)
         if: always()
-        run: trivy image --severity HIGH --ignore-unfixed --vuln-type os,library --exit-code 0 databasus-dev:smoke-${{ github.sha }}
+        run: trivy image --severity HIGH --ignore-unfixed --pkg-types os,library --scanners vuln --exit-code 0 databasus-dev:smoke-${{ github.sha }}
 
       - name: Cleanup smoke container
         if: always()
@@ -637,11 +637,11 @@ jobs:
           sudo apt-get install -y trivy
 
       - name: Trivy scan release image (CRITICAL, blocking)
-        run: trivy image --severity CRITICAL --ignore-unfixed --vuln-type os,library --exit-code 1 databasus:smoke-${{ github.sha }}
+        run: trivy image --severity CRITICAL --ignore-unfixed --pkg-types os,library --scanners vuln --exit-code 1 databasus:smoke-${{ github.sha }}
 
       - name: Trivy scan release image (HIGH, advisory)
         if: always()
-        run: trivy image --severity HIGH --ignore-unfixed --vuln-type os,library --exit-code 0 databasus:smoke-${{ github.sha }}
+        run: trivy image --severity HIGH --ignore-unfixed --pkg-types os,library --scanners vuln --exit-code 0 databasus:smoke-${{ github.sha }}
 
       - name: Cleanup smoke container
         if: always()

@@ -22,7 +22,7 @@ RUN pnpm build
 
 # ========= BUILD BACKEND =========
 # Backend build stage
-FROM --platform=$BUILDPLATFORM golang:1.26.2 AS backend-build
+FROM --platform=$BUILDPLATFORM golang:1.26.3 AS backend-build
 
 # Make TARGET args available early so tools built here match the final image arch
 ARG TARGETOS
@@ -32,7 +32,7 @@ ARG TARGETARCH
 # binary is compiled for the target architecture instead of downloading a
 # prebuilt binary which may have the wrong architecture (causes exec format
 # errors on ARM).
-RUN git clone --depth 1 --branch v3.24.3 https://github.com/pressly/goose.git /tmp/goose && \
+RUN git clone --depth 1 --branch v3.27.1 https://github.com/pressly/goose.git /tmp/goose && \
   cd /tmp/goose/cmd/goose && \
   GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} \
   go build -o /usr/local/bin/goose . && \
@@ -81,7 +81,7 @@ RUN CGO_ENABLED=0 \
 # so the agent runs on any Linux distro (Alpine, Debian, Ubuntu, RHEL, etc.).
 # APP_VERSION is baked into the binary via -ldflags so the agent can
 # compare its version against the server and auto-update when needed.
-FROM --platform=$BUILDPLATFORM golang:1.26.2 AS agent-build
+FROM --platform=$BUILDPLATFORM golang:1.26.3 AS agent-build
 
 ARG APP_VERSION=dev
 
