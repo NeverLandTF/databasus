@@ -258,13 +258,6 @@ export default function Index() {
               </a>
 
               <a
-                href="#features"
-                className="py-2 hover:text-gray-300 transition-colors"
-              >
-                Features
-              </a>
-
-              <a
                 href="/installation"
                 className="py-2 hover:text-gray-300 transition-colors"
               >
@@ -276,6 +269,13 @@ export default function Index() {
                 className="py-2 hover:text-gray-300 transition-colors"
               >
                 Cloud
+              </a>
+
+              <a
+                href="/labs"
+                className="py-2 hover:text-gray-300 transition-colors"
+              >
+                Labs
               </a>
 
               <a
@@ -356,7 +356,7 @@ export default function Index() {
               <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-2 max-w-[400px] mx-auto pb-0 sm:pb-[50px] lg:pb-0 lg:[0px]">
                 <a
                   href="#installation"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-3"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
                 >
                   Self-host via Docker
                 </a>
@@ -365,7 +365,7 @@ export default function Index() {
                   href="https://github.com/databasus/databasus"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity order-4 sm:order-4"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity order-2 sm:order-2"
                 >
                   <svg
                     aria-hidden={true}
@@ -393,7 +393,7 @@ export default function Index() {
                   <span>GitHub</span>
                 </a>
 
-                <div className="w-full flex items-center gap-3 order-2 sm:max-w-[312px]">
+                <div className="w-full flex items-center gap-3 order-3 sm:max-w-[312px]">
                   <div className="flex-1 h-px bg-[#ffffff20]" />
                   <span className="text-sm text-gray-400">or</span>
                   <div className="flex-1 h-px bg-[#ffffff20]" />
@@ -401,7 +401,7 @@ export default function Index() {
 
                 <a
                   href="/cloud"
-                  className="w-full sm:max-w-[312px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
+                  className="w-full sm:max-w-[312px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-5"
                 >
                   <span>Host in cloud from $9/mo</span>
                   <svg
@@ -417,6 +417,13 @@ export default function Index() {
                   >
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
+                </a>
+
+                <a
+                  href="/labs"
+                  className="w-full sm:max-w-[312px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-4"
+                >
+                  <span>Hire Databasus Labs</span>
                 </a>
               </div>
             </div>
@@ -1309,21 +1316,21 @@ export default function Index() {
                   data encryption — all passwords, tokens and credentials are
                   encrypted with AES-256-GCM and stored separately from the
                   database; (2) Backup encryption — each backup file is
-                  encrypted with a unique key derived from a master key,
-                  backup ID and random salt, making backups useless without
-                  your encryption key even if someone gains storage access;
-                  (3) Read-only database access — Databasus only requires
-                  SELECT permissions and performs comprehensive checks to
-                  ensure no write privileges exist, preventing data
-                  corruption even if the tool is compromised.
+                  encrypted with a unique key derived from a master key, backup
+                  ID and random salt, making backups useless without your
+                  encryption key even if someone gains storage access; (3)
+                  Read-only database access — Databasus only requires SELECT
+                  permissions and performs comprehensive checks to ensure no
+                  write privileges exist, preventing data corruption even if the
+                  tool is compromised.
                   <br />
                   <br />
                   Beyond runtime, security and reliability are engineered into
                   every commit and PR: CodeQL static analysis, CodeRabbit with
                   gitleaks and semgrep, Dependabot CVE monitoring, Trivy image
-                  and Dockerfile scans, and periodic Codex Security audits
-                  from OpenAI. Integration tests run against real PostgreSQL,
-                  MySQL, MariaDB and MongoDB containers and verify full
+                  and Dockerfile scans, and periodic Codex Security audits from
+                  OpenAI. Integration tests run against real PostgreSQL, MySQL,
+                  MariaDB and MongoDB containers and verify full
                   backup-then-restore cycles on every PR. GitHub Actions are
                   pinned to commit SHAs and workflows follow least-privilege
                   permissions.
@@ -1367,7 +1374,7 @@ export default function Index() {
             <FaqItem
               number="6"
               question="What is Databasus adoption level?"
-              answer="Databasus is the most widely adopted open-source PostgreSQL backup tool today. At the moment of 22 March 2026, it has been pulled approximately 400,000 times on Docker by DBAs, DevOps engineers, developers and teams worldwide. With 6,100+ GitHub stars, it surpasses pgBackRest (~3,700 stars, available since 2014) and WAL-G (~4,000 stars, available since 2017). Databasus launched in 2025 and outpaced both within its first year. This adoption level reflects strong community trust and preference among database professionals."
+              answer="Databasus is the most widely adopted open-source PostgreSQL backup tool today. At the moment of 20 May 2026, it has been pulled approximately 600,000 times on Docker by DBAs, DevOps engineers, developers and teams worldwide. With 7,000+ GitHub stars, it surpasses pgBackRest (~3,700 stars, available since 2014) and WAL-G (~4,000 stars, available since 2017). Databasus launched in 2025 and outpaced both within its first year. This adoption level reflects strong community trust and preference among database professionals."
             />
             <FaqItem
               number="7"
@@ -1396,11 +1403,25 @@ export default function Index() {
                   cloud to self-hosted if you wish.
                   <br />
                   <br />
-                  Revenue from Cloud funds full-time development of the project.
-                  Most large open-source projects rely on corporate backing or
-                  sponsorship to survive. We chose a different path: Databasus
-                  sustains itself so it can grow and improve independently,
-                  without being tied to any enterprise or sponsor.
+                  Moreover, we have a DBA-as-a-service offering,{" "}
+                  <a href="/labs" target="_blank" className="text-blue-400">Databasus Labs</a>, to fund Databasus
+                  development and help companies with their database management
+                  needs.
+                  <br />
+                  <br />
+                  Revenue from Cloud and Databasus Labs funds full-time
+                  development of the project. Most large open-source projects
+                  rely on corporate backing or sponsorship to survive (such as
+                  pgBackRest, for example). Any long-running OSS project needs
+                  to be funded.
+                  <br />
+                  <br />
+                  To address this, Databasus sustains itself so it can grow and
+                  improve independently, without being tied to any enterprise
+                  or sponsor. Our vision is to keep Databasus fully open-source
+                  forever, with a promise to never close it off through
+                  licensing or withheld code. So any DevOps or DBA company can
+                  provide services on top of Databasus as well.
                 </>
               }
             />
