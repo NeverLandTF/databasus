@@ -138,6 +138,17 @@ export default function RestoreVerificationPage() {
                 <li>reports the outcome</li>
               </ul>
 
+              <img
+                src="/images/restore-verification/verified-backups.png"
+                alt="Verified backups tab"
+              />
+
+              <img
+                className="mt-5"
+                src="/images/restore-verification/verifications.png"
+                alt="Verifications tab"
+              />
+
               <h2 id="what-is-verification-agent">
                 What is a verification agent?
               </h2>
@@ -430,10 +441,10 @@ export default function RestoreVerificationPage() {
                 status is one of <strong>Pending</strong>,{" "}
                 <strong>Running</strong>, <strong>Successful</strong>,{" "}
                 <strong>Failed</strong> or <strong>Canceled</strong>. Clicking a
-                row opens a drawer with the full timeline, the{" "}
-                restore exit code, the restored database size,
-                schema and table counts, and a per-table row-count breakdown.
-                Failed runs show the failure message at the top of the drawer.
+                row opens a drawer with the full timeline, the restore exit
+                code, the restored database size, schema and table counts, and a
+                per-table row-count breakdown. Failed runs show the failure
+                message at the top of the drawer.
               </p>
             </article>
           </div>
