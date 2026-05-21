@@ -141,12 +141,14 @@ export default function RestoreVerificationPage() {
               <img
                 src="/images/restore-verification/verified-backups.png"
                 alt="Verified backups tab"
+                loading="lazy"
               />
 
               <img
                 className="mt-5"
                 src="/images/restore-verification/verifications.png"
                 alt="Verifications tab"
+                loading="lazy"
               />
 
               <h2 id="what-is-verification-agent">
