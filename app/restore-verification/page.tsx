@@ -174,10 +174,10 @@ export default function RestoreVerificationPage() {
                   job.
                 </li>
                 <li>
-                  Disk capacity of roughly{" "}
-                  <strong>2× your largest backup</strong> with at least 1 GB of
-                  headroom. A single job needs space for the compressed archive
-                  and the restored database side by side.
+                  Disk capacity for each verification job covering the{" "}
+                  <strong>backup file size</strong>, the{" "}
+                  <strong>database raw size</strong> and a{" "}
+                  <strong>5 GB safety gap</strong> on top.
                 </li>
                 <li>
                   At least 1 CPU core and 512 MB of RAM available per concurrent
@@ -316,11 +316,12 @@ export default function RestoreVerificationPage() {
                 <code>--max-concurrent-jobs=2</code>, each job gets 1 CPU and 1
                 GB. The floor is 1 CPU and 512 MB per job — if your budget
                 can&apos;t satisfy that floor, the agent advertises lower
-                concurrency. The disk budget is the easiest to get wrong: it
-                needs to cover the compressed archive <em>and</em> the restored
-                database side by side, so set <code>--max-disk-gb</code> to
-                roughly twice the size of your largest backup with at least 1 GB
-                of headroom.
+                concurrency. The disk budget is the easiest to get wrong: each
+                job needs enough space for the <strong>backup file size</strong>
+                , the <strong>database raw size</strong> and a{" "}
+                <strong>5 GB safety gap</strong> on top, so set{" "}
+                <code>--max-disk-gb</code> comfortably above that for your
+                largest database.
               </p>
 
               <h3 id="manage">Manage the agent</h3>
