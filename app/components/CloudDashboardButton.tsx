@@ -15,7 +15,7 @@ export function CloudDashboardButton({
       href="https://app.databasus.com"
       className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-12 sm:py-2.5 bg-[#0d6efd] rounded-lg text-white font-medium hover:opacity-70 transition-opacity order-1 cursor-pointer"
     >
-      <span>Configure backups</span>
+      <span>Setup backups in 2 minutes</span>
       <svg
         aria-hidden={true}
         width="20"

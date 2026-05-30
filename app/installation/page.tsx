@@ -239,7 +239,7 @@ sudo curl -sSL https://raw.githubusercontent.com/databasus/databasus/refs/heads/
                     target="_blank"
                     className="mt-3 sm:max-w-[364px] inline-flex items-center justify-center px-4 py-2 sm:px-10 sm:py-2.5 bg-blue-600 text-white! rounded-lg font-medium hover:opacity-70 transition-opacity text-sm"
                   >
-                    Use cloud from $9/mo
+                    Use cloud from $25/mo
                   </a>
                 </div>
               </div>
