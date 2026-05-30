@@ -189,8 +189,8 @@ export default function Index() {
 
           {/* Content */}
           <div className="mb-8 md:mb-16 flex flex-col md:flex-row">
-            <div className="w-full md:w-1/2 text-center md:text-left">
-              <h1 className="text-xl sm:text-2xl 2xl:text-3xl leading-tight font-bold mb-4 md:max-w-[530px]">
+            <div className="w-full md:w-1/2 md:text-left">
+              <h1 className="text-xl sm:text-center sm:text-2xl 2xl:text-3xl leading-tight font-bold mb-4 md:max-w-[530px]">
                 PostgreSQL backups{" "}
                 <span className="underline decoration-4 underline-offset-3 decoration-[#0d6efd]">
                   at optimized cost
@@ -199,13 +199,13 @@ export default function Index() {
                 strikes
               </h1>
 
-              <p className="text-sm xl:text-lg text-gray-200 mb-4 max-w-[460px] mx-auto md:mx-0">
+              <p className="xl:text-lg text-gray-200 mb-4 sm:text-center max-w-[460px] sm:mx-auto md:mx-0">
                 Databasus Cloud backs up your database as a primary or
                 additional independent backup engine (suitable for cloud DBs). We take care of uptime and
                 cost optimization for you
               </p>
 
-              <ul className="mb-6 max-w-[460px] mx-auto md:mx-0 flex flex-col gap-2 text-sm xl:text-lg text-gray-200">
+              <ul className="mb-6 max-w-[460px] sm:mx-auto md:mx-0 flex flex-col gap-2 xl:text-lg text-gray-200">
                 {[
                   "Restore verification on a daily basis",
                   "Download portable backups at any time",
