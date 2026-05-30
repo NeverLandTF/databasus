@@ -265,7 +265,7 @@ export default function Index() {
                       },
                       {
                         feature: "Price",
-                        self: "VPS + maintenance",
+                        self: "VPS + maintenance + S3",
                         cloud: "From $25/mo",
                       },
                       {
