@@ -348,7 +348,7 @@ export default function Index() {
             </p>
 
             <div>
-              <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-2 max-w-[400px] mx-auto pb-0 sm:pb-[50px] lg:pb-0 lg:[0px]">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-2 max-w-[370px] mx-auto pb-0 sm:pb-[50px] lg:pb-0 lg:[0px]">
                 <a
                   href="#installation"
                   className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
