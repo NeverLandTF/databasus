@@ -6,7 +6,7 @@ import DocTableOfContentComponent from "../components/DocTableOfContentComponent
 export const metadata: Metadata = {
   title: "Privacy Policy - Databasus",
   description:
-    "Learn how Databasus respects your privacy with anonymous analytics, GDPR compliance and no personal data collection. We use privacy-first analytics to improve user experience.",
+    "Learn how Databasus respects your privacy with anonymous analytics, GDPR compliance and no personal data collection. Covers the website, the self-hosted app and sponsorship payments processed by Paddle.",
   keywords: [
     "privacy policy",
     "GDPR compliance",
@@ -16,6 +16,8 @@ export const metadata: Metadata = {
     "no tracking",
     "data privacy",
     "user privacy",
+    "sponsorship",
+    "Paddle",
   ],
   openGraph: {
     title: "Privacy Policy - Databasus",
@@ -78,7 +80,7 @@ export default function PrivacyPage() {
               <h1 id="privacy-policy">Privacy Policy</h1>
 
               <p className="text-lg text-gray-400">
-                Last updated: March 9, 2026
+                Last updated: June 10, 2026
               </p>
 
               <p>
@@ -87,20 +89,13 @@ export default function PrivacyPage() {
               </p>
 
               <p>
-                This policy applies to the self-hosted version and the website
-                only. If you are using Databasus Cloud, see the{" "}
+                This policy covers our website, the self-hosted Databasus app
+                and sponsorship. If you sponsor Databasus, please also see our{" "}
                 <a
-                  href="/privacy-cloud"
+                  href="/terms-of-use"
                   className="text-blue-500 hover:text-blue-600"
                 >
-                  cloud privacy policy
-                </a>{" "}
-                and{" "}
-                <a
-                  href="/terms-of-use-cloud"
-                  className="text-blue-500 hover:text-blue-600"
-                >
-                  cloud terms of use
+                  terms of use
                 </a>
                 .
               </p>
@@ -427,6 +422,95 @@ export default function PrivacyPage() {
                   advanced configuration
                 </a>{" "}
                 page for details.
+              </p>
+
+              <h2 id="sponsorship-payments">Sponsorship &amp; payments</h2>
+
+              <p>
+                Databasus is free and open source, and sponsorship is an optional
+                way to support the project. If you choose to sponsor, here is how
+                we handle your data.
+              </p>
+
+              <h3 id="sponsorship-paddle">Payments are processed by Paddle</h3>
+
+              <p>
+                All sponsorship payments are sold and processed by{" "}
+                <strong>Paddle</strong>, acting as our authorized reseller and
+                merchant of record. Paddle is the controller of your payment and
+                billing data and processes it under its own{" "}
+                <a
+                  href="https://www.paddle.com/legal/checkout-buyer-terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-600"
+                >
+                  buyer terms
+                </a>
+                . Your card and payment details go{" "}
+                <strong>only to Paddle</strong> — we never see, receive or store
+                your full payment information.
+              </p>
+
+              <h3 id="sponsorship-what-we-receive">What we receive</h3>
+
+              <p>
+                To fulfil a sponsorship, Paddle shares a limited set of
+                information with us, such as your name, email address, company
+                name, billing country and the sponsorship tier you chose. We use
+                it only to:
+              </p>
+
+              <ul>
+                <li>Set up and display your sponsor listing</li>
+                <li>Provide receipts, invoices and support</li>
+                <li>Manage and renew your sponsorship</li>
+              </ul>
+
+              <p>
+                We do <strong>not</strong> send marketing emails. Any messages we
+                send are transactional and directly related to your sponsorship.
+              </p>
+
+              <h3 id="sponsorship-public-listing">Your public listing</h3>
+
+              <p>
+                A sponsorship includes a listing — which may show your name or
+                company name, logo and a link — in the sponsors list. By choosing
+                to sponsor and providing these materials, you agree that this
+                information is <strong>published publicly</strong> in the sponsors
+                list on the website and in the Databasus GitHub repository. You
+                can change or remove what is displayed at any time by contacting
+                us at{" "}
+                <a
+                  href="mailto:info@databasus.com"
+                  className="text-blue-500 hover:text-blue-600"
+                >
+                  info@databasus.com
+                </a>
+                .
+              </p>
+
+              <h3 id="sponsorship-retention">Retention and your rights</h3>
+
+              <p>
+                We keep your sponsorship-related data for as long as your
+                sponsorship is active and afterwards only as required for tax,
+                accounting and legal obligations. You keep all the GDPR rights
+                described in the{" "}
+                <a href="#your-rights" className="text-blue-500 hover:text-blue-600">
+                  Your rights
+                </a>{" "}
+                section above — including access, rectification and erasure — and
+                can exercise them by contacting{" "}
+                <a
+                  href="mailto:info@databasus.com"
+                  className="text-blue-500 hover:text-blue-600"
+                >
+                  info@databasus.com
+                </a>
+                . Payment records held by Paddle are subject to Paddle&apos;s own
+                privacy policy.
               </p>
 
               <h2 id="changes-to-policy">Changes to this privacy policy</h2>

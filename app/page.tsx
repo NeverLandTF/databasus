@@ -274,6 +274,13 @@ export default function Index() {
               >
                 Community
               </a>
+
+              <a
+                href="/sponsorship"
+                className="py-2 hover:text-gray-300 transition-colors"
+              >
+                Sponsorship
+              </a>
             </div>
 
             {/* GitHub Button */}
@@ -344,7 +351,7 @@ export default function Index() {
               <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-2 max-w-[400px] mx-auto pb-0 sm:pb-[50px] lg:pb-0 lg:[0px]">
                 <a
                   href="#installation"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-1"
                 >
                   Self-host via Docker
                 </a>
@@ -353,7 +360,7 @@ export default function Index() {
                   href="https://github.com/databasus/databasus"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity order-2 sm:order-2"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity order-2 sm:order-2"
                 >
                   <svg
                     aria-hidden={true}
@@ -379,6 +386,13 @@ export default function Index() {
                   </svg>
 
                   <span>GitHub</span>
+                </a>
+
+                <a
+                  href="/sponsorship"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium bg-[#155dfc] text-white hover:opacity-80 transition-opacity order-3"
+                >
+                  Sponsor Databasus 🤝
                 </a>
               </div>
             </div>
@@ -1674,12 +1688,6 @@ export default function Index() {
                   Documentation
                 </a>
                 <a
-                  href="/privacy"
-                  className="hover:text-gray-200 transition-colors"
-                >
-                  Privacy
-                </a>
-                <a
                   href="https://github.com/databasus/databasus"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1696,6 +1704,12 @@ export default function Index() {
                   Community
                 </a>
                 <a
+                  href="/sponsorship"
+                  className="hover:text-gray-200 transition-colors"
+                >
+                  Sponsorship
+                </a>
+                <a
                   href="https://rostislav-dugin.com"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1705,19 +1719,19 @@ export default function Index() {
                 </a>
               </div>
 
-              {/* Third row - Cloud legal links */}
+              {/* Third row - Legal links */}
               <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
                 <a
-                  href="/privacy-cloud"
+                  href="/privacy"
                   className="hover:text-gray-200 transition-colors"
                 >
-                  Privacy policy (cloud)
+                  Privacy
                 </a>
                 <a
-                  href="/terms-of-use-cloud"
+                  href="/terms-of-use"
                   className="hover:text-gray-200 transition-colors"
                 >
-                  Terms of use (cloud)
+                  Terms of use
                 </a>
               </div>
             </div>

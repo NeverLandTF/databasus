@@ -27,6 +27,12 @@ export default function DocsNavbarComponent() {
           >
             Community
           </a>
+          <a
+            className="text-gray-300 hover:text-white transition-colors"
+            href="/sponsorship"
+          >
+            Sponsorship
+          </a>
         </div>
 
         <a

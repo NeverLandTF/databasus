@@ -194,6 +194,13 @@ export default function MongodbBackupPage() {
               >
                 Community
               </a>
+
+              <a
+                href="/sponsorship"
+                className="py-2 hover:text-gray-300 transition-colors"
+              >
+                Sponsorship
+              </a>
             </div>
 
             {/* GitHub Button */}
@@ -262,29 +269,16 @@ export default function MongodbBackupPage() {
             <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-2 max-w-[400px] mx-auto pb-0 sm:pb-[50px] lg:pb-0">
               <a
                 href="#installation"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-3"
+                className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-3"
               >
-                <span>Configure in 2 minutes</span>
-                <svg
-                  aria-hidden={true}
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
+                Self-host via Docker
               </a>
 
               <a
                 href="https://github.com/databasus/databasus"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity order-4 sm:order-4"
+                className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium border border-[#ffffff20] bg-[#0C0E13] hover:opacity-70 transition-opacity order-4 sm:order-4"
               >
                 <svg
                   aria-hidden={true}
@@ -310,6 +304,13 @@ export default function MongodbBackupPage() {
                 </svg>
 
                 <span>GitHub</span>
+              </a>
+
+              <a
+                href="/sponsorship"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium bg-[#155dfc] text-white hover:opacity-80 transition-opacity order-5"
+              >
+                Sponsor Databasus 🤝
               </a>
             </div>
           </div>
@@ -1032,6 +1033,12 @@ export default function MongodbBackupPage() {
                   className="hover:text-gray-200 transition-colors"
                 >
                   Community
+                </a>
+                <a
+                  href="/sponsorship"
+                  className="hover:text-gray-200 transition-colors"
+                >
+                  Sponsorship
                 </a>
                 <a
                   href="https://rostislav-dugin.com"
