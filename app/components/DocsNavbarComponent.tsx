@@ -21,24 +21,6 @@ export default function DocsNavbarComponent() {
         <div className="ml-auto mr-4 hidden gap-3 sm:mr-6 md:mr-10 lg:flex lg:gap-5">
           <a
             className="text-gray-300 hover:text-white transition-colors"
-            href="/labs"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Labs
-          </a>
-
-          <a
-            className="text-gray-300 hover:text-white transition-colors"
-            href="/cloud"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Cloud
-          </a>
-
-          <a
-            className="text-gray-300 hover:text-white transition-colors"
             href="https://t.me/databasus_community"
             target="_blank"
             rel="noopener noreferrer"

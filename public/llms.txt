@@ -57,7 +57,7 @@ Content: Four installation methods - automated script, Docker run, Docker Compos
 
 ### Advanced Config
 URL: /advanced-config
-Content: Optional environment variables for self-hosting Databasus — none required for a default install. Covers Google and GitHub OAuth sign-in, SMTP email, Cloudflare Turnstile sign-up captcha, disabling the in-app cloud notice, anonymous telemetry, VictoriaLogs log shipping, a custom analytics script and multi-node mode — including why Databasus bundles its own PostgreSQL and Valkey and how to run it against external instances. Notes that OAuth sign-in and email require the instance to be served over HTTPS on a public domain.
+Content: Optional environment variables for self-hosting Databasus — none required for a default install. Covers Google and GitHub OAuth sign-in, SMTP email, Cloudflare Turnstile sign-up captcha, anonymous telemetry, VictoriaLogs log shipping and a custom analytics script. Notes that OAuth sign-in and email require the instance to be served over HTTPS on a public domain.
 
 ### Access Management
 URL: /access-management

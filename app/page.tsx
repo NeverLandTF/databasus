@@ -267,20 +267,6 @@ export default function Index() {
               </a>
 
               <a
-                href="/cloud"
-                className="py-2 hover:text-gray-300 transition-colors"
-              >
-                Cloud
-              </a>
-
-              <a
-                href="/labs"
-                className="py-2 hover:text-gray-300 transition-colors"
-              >
-                Labs
-              </a>
-
-              <a
                 href="https://t.me/databasus_community"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -393,39 +379,6 @@ export default function Index() {
                   </svg>
 
                   <span>GitHub</span>
-                </a>
-
-                <div className="w-full flex items-center gap-3 order-3 sm:max-w-[312px]">
-                  <div className="flex-1 h-px bg-[#ffffff20]" />
-                  <span className="text-sm text-gray-400">or</span>
-                  <div className="flex-1 h-px bg-[#ffffff20]" />
-                </div>
-
-                <a
-                  href="/cloud"
-                  className="w-full sm:max-w-[312px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-blue-600 rounded-lg text-white font-medium hover:bg-blue-700 transition-colors order-4"
-                >
-                  <span>Cloud from $25/mo (7-day free)</span>
-                  <svg
-                    aria-hidden={true}
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </a>
-
-                <a
-                  href="/labs"
-                  className="w-full sm:max-w-[312px] inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-white rounded-lg text-black font-medium hover:opacity-70 transition-opacity order-5"
-                >
-                  <span>Hire Databasus Labs</span>
                 </a>
               </div>
             </div>
@@ -1388,57 +1341,6 @@ export default function Index() {
             />
             <FaqItem
               number="7"
-              question="You have a cloud version — are you truly open source?"
-              answer={
-                <>
-                  Yes. Every feature available in Databasus Cloud is equally
-                  available in the self-hosted version with no restrictions, no
-                  feature gates and no usage limits. The entire codebase is
-                  Apache 2.0 licensed and always will be.
-                  <br />
-                  <br />
-                  Databasus is not &quot;open core.&quot; We do not withhold
-                  features behind a paid tier and then call the limited
-                  remainder &quot;open source,&quot; as projects like GitLab or
-                  Sentry do. We believe open source means the complete product
-                  is open, not just a marketing label on a stripped-down
-                  edition.
-                  <br />
-                  <br />
-                  Databasus Cloud runs the exact same code as the self-hosted
-                  version. The only difference is that we take care of
-                  infrastructure, availability, backups, reservations,
-                  monitoring and updates for you — so you don&apos;t have to. If
-                  you are using cloud, you can always move your databases from
-                  cloud to self-hosted if you wish.
-                  <br />
-                  <br />
-                  Moreover, we have a DBA-as-a-service offering,{" "}
-                  <a href="/labs" target="_blank" className="text-blue-400">
-                    Databasus Labs
-                  </a>
-                  , to fund Databasus development and help companies with their
-                  database management needs.
-                  <br />
-                  <br />
-                  Revenue from Cloud and Databasus Labs funds full-time
-                  development of the project. Most large open-source projects
-                  rely on corporate backing or sponsorship to survive (such as
-                  pgBackRest, for example). Any long-running OSS project needs
-                  to be funded.
-                  <br />
-                  <br />
-                  To address this, Databasus sustains itself so it can grow and
-                  improve independently, without being tied to any enterprise or
-                  sponsor. Our vision is to keep Databasus fully open-source
-                  forever, with a promise to never close it off through
-                  licensing or withheld code. So any DevOps or DBA company can
-                  provide services on top of Databasus as well.
-                </>
-              }
-            />
-            <FaqItem
-              number="8"
               question="How is Databasus different from PgBackRest, Barman or pg_dump? Where can I read comparisons?"
               answer={
                 <>
@@ -1500,7 +1402,7 @@ export default function Index() {
               }
             />
             <FaqItem
-              number="9"
+              number="8"
               question="Is Databasus supported by Anthropic and OpenAI OSS programs?"
               answer={
                 <>
@@ -1538,12 +1440,12 @@ export default function Index() {
               }
             />
             <FaqItem
-              number="10"
+              number="9"
               question="Is Databasus an alternative to pg_dump?"
               answer="For logical backups, yes — Databasus is a modern replacement for pg_dump. It extends pg_dump with a user-friendly web interface, automated scheduling, multiple storage destinations, real-time notifications, health monitoring and backup encryption. Think of it as pg_dump with superpowers — all the reliability plus enterprise features without writing shell scripts. Beyond logical backups, Databasus also supports agent mode where physical backups with WAL archiving are used for disaster recovery scenarios, providing incremental backups and Point-in-Time Recovery."
             />
             <FaqItem
-              number="11"
+              number="10"
               question="Which databases does Databasus support?"
               answer={
                 <>
@@ -1567,7 +1469,7 @@ export default function Index() {
               }
             />
             <FaqItem
-              number="12"
+              number="11"
               question="What backup types does Databasus support?"
               answer={
                 <>
@@ -1599,7 +1501,7 @@ export default function Index() {
               }
             />
             <FaqItem
-              number="13"
+              number="12"
               question="Why was Postgresus renamed to Databasus?"
               answer={
                 <>
@@ -1645,7 +1547,7 @@ export default function Index() {
               }
             />
             <FaqItem
-              number="14"
+              number="13"
               question="How is AI used in Databasus development?"
               answer={
                 <>
@@ -1675,7 +1577,7 @@ export default function Index() {
               }
             />
             <FaqItem
-              number="15"
+              number="14"
               question="How can I join the Databasus community?"
               answer={
                 <>
@@ -1696,7 +1598,7 @@ export default function Index() {
               }
             />
             <FaqItem
-              number="16"
+              number="15"
               question="Can I restore backups without Databasus?"
               answer={
                 <>

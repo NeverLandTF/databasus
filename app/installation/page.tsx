@@ -201,49 +201,6 @@ sudo curl -sSL https://raw.githubusercontent.com/databasus/databasus/refs/heads/
                 deployments.
               </p>
 
-              <div className="bg-[#1f2937]/50 border border-[#ffffff20] border-l-[3px] border-l-blue-500 rounded-lg px-4 py-4 flex items-start gap-3">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-blue-500 mt-0.5 shrink-0"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 16v-4M12 8h.01" />
-                </svg>
-                <div>
-                  <p className="text-gray-300 my-0!">
-                    If you do not want to install or manage your own instance,
-                    you can use cloud version.{" "}
-                    <u>
-                      You can always switch back from cloud to self-hosted
-                      installation
-                    </u>{" "}
-                    without any limits or features locks. Databasus is{" "}
-                    <a
-                      target="_blank"
-                      href="https://github.com/databasus/databasus?tab=readme-ov-file#you-have-a-cloud-version--are-you-truly-open-source"
-                    >
-                      fully open source
-                    </a>{" "}
-                    and use for cloud same installation as you can self-host. We
-                    just manage infrastructure, uptime and reservation for you.
-                  </p>
-                  <a
-                    href="https://app.databasus.com"
-                    target="_blank"
-                    className="mt-3 sm:max-w-[364px] inline-flex items-center justify-center px-4 py-2 sm:px-10 sm:py-2.5 bg-blue-600 text-white! rounded-lg font-medium hover:opacity-70 transition-opacity text-sm"
-                  >
-                    Use cloud from $25/mo
-                  </a>
-                </div>
-              </div>
-
               <h2 id="system-requirements">System requirements</h2>
 
               <p>
