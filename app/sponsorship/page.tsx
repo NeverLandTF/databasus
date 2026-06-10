@@ -599,7 +599,7 @@ export default function SponsorshipPage() {
                   href="/privacy"
                   className="hover:text-gray-200 transition-colors"
                 >
-                  Privacy
+                  Privacy policy
                 </a>
                 <a
                   href="/terms-of-use"
