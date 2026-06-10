@@ -35,6 +35,7 @@ export interface Tier {
 }
 
 export const TIERS: Tier[] = [
+  { name: "Test", monthly: { price: "$5", priceId: "pri_01ktry14kywxgedc3522p58e7w" } },
   { name: "Supporter", monthly: { price: "$25", priceId: "pri_01ktqst3kr153241zp1htecz9w" } },
   { name: "Backer", monthly: { price: "$100", priceId: "pri_01ktqsvm5wf86ext20jawzdqj7" } },
   {

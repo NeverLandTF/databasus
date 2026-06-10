@@ -268,7 +268,16 @@ export default function SponsorshipPage() {
                   </button>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2.5">
+                {/* Sponsor display name — passed to Paddle as custom data so we
+                    list the right name (person or company) in our sponsors. */}
+                <input
+                  id="sponsor-name"
+                  type="text"
+                  placeholder="Name to list you as a sponsor (you or your company)"
+                  className="mt-4 w-full rounded-xl border border-[#ffffff20] bg-[#0C0E13] px-3 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-[#155dfc] focus:outline-none"
+                />
+
+                <div className="mt-3 grid grid-cols-2 gap-2.5">
                   {TIERS.map((tier, i) => {
                     const spanFull =
                       TIERS.length % 2 === 1 && i === TIERS.length - 1;
@@ -287,7 +296,7 @@ export default function SponsorshipPage() {
                     ) =>
                       priceUsesPaddle(price.priceId) ? (
                         <a
-                          className={`paddle_button absolute inset-0 z-10 cursor-pointer rounded-xl ${visibility}`}
+                          className={`js-sponsor-checkout absolute inset-0 z-10 cursor-pointer rounded-xl ${visibility}`}
                           data-items={JSON.stringify([
                             { priceId: price.priceId, quantity: 1 },
                           ])}
@@ -358,6 +367,25 @@ export default function SponsorshipPage() {
                     document.querySelectorAll('[data-billing]').forEach(function(b){
                       b.addEventListener('click',function(){
                         p.classList.toggle('is-annual', b.getAttribute('data-billing')==='annual');
+                      });
+                    });
+                  })();
+                `}</Script>
+
+                {/* Open the Paddle overlay ourselves so we can attach the
+                    sponsor name typed above as customData on the transaction. */}
+                <Script id="sponsor-checkout" strategy="afterInteractive">{`
+                  (function(){
+                    document.querySelectorAll('.js-sponsor-checkout').forEach(function(el){
+                      el.addEventListener('click',function(e){
+                        e.preventDefault();
+                        var P=window.Paddle;
+                        if(!P||!P.Checkout)return;
+                        var input=document.getElementById('sponsor-name');
+                        var name=input?input.value.trim():'';
+                        var open={items:JSON.parse(el.getAttribute('data-items'))};
+                        if(name)open.customData={sponsor_name:name};
+                        P.Checkout.open(open);
                       });
                     });
                   })();
