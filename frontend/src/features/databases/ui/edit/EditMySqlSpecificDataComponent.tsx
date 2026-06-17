@@ -2,7 +2,6 @@ import { CopyOutlined, DownOutlined, InfoCircleOutlined, UpOutlined } from '@ant
 import { App, Button, Input, InputNumber, Select, Switch, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
 
-import { IS_CLOUD } from '../../../../constants';
 import { type Database, databaseApi } from '../../../../entity/databases';
 import { MySqlConnectionStringParser } from '../../../../entity/databases/model/mysql/MySqlConnectionStringParser';
 import { ClipboardHelper } from '../../../../shared/lib/ClipboardHelper';
@@ -213,7 +212,7 @@ export const EditMySqlSpecificDataComponent = ({
         />
       </div>
 
-      {isLocalhostDb && !IS_CLOUD && (
+      {isLocalhostDb && (
         <div className="mb-1 flex">
           <div className="min-w-[150px]" />
           <div className="max-w-[200px] text-xs text-gray-500 dark:text-gray-400">
@@ -410,7 +409,7 @@ export const EditMySqlSpecificDataComponent = ({
         )}
       </div>
 
-      {isConnectionFailed && !IS_CLOUD && (
+      {isConnectionFailed && (
         <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
           If your database uses IP whitelist, make sure Databasus server IP is added to the allowed
           list.

@@ -66,43 +66,6 @@ RUN CGO_ENABLED=0 \
   go build -o /app/main ./cmd/main.go
 
 
-# ========= BUILD AGENT =========
-# Builds the databasus-agent CLI binary for BOTH x86_64 and ARM64.
-# Both architectures are always built because:
-# - Databasus server runs on one arch (e.g. amd64)
-# - The agent runs on remote PostgreSQL servers that may be on a
-#   different arch (e.g. arm64)
-# - The backend serves the correct binary based on the agent's
-#   ?arch= query parameter
-#
-# We cross-compile from the build platform (no QEMU needed) because the
-# agent is pure Go with zero C dependencies.
-# CGO_ENABLED=0 produces fully static binaries — no glibc/musl dependency,
-# so the agent runs on any Linux distro (Alpine, Debian, Ubuntu, RHEL, etc.).
-# APP_VERSION is baked into the binary via -ldflags so the agent can
-# compare its version against the server and auto-update when needed.
-FROM --platform=$BUILDPLATFORM golang:1.26.3 AS agent-build
-
-ARG APP_VERSION=dev
-
-WORKDIR /agent
-
-COPY agent/backup/go.mod ./
-RUN go mod download
-
-COPY agent/backup/ ./
-
-# Build for x86_64 (amd64) — static binary, no glibc dependency
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -ldflags "-X main.Version=${APP_VERSION}" \
-    -o /agent-binaries/databasus-agent-linux-amd64 ./cmd/main.go
-
-# Build for ARM64 (arm64) — static binary, no glibc dependency
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
-    go build -ldflags "-X main.Version=${APP_VERSION}" \
-    -o /agent-binaries/databasus-agent-linux-arm64 ./cmd/main.go
-
-
 # ========= BUILD VERIFICATION AGENT =========
 FROM --platform=$BUILDPLATFORM golang:1.26.3 AS verification-agent-build
 
@@ -199,12 +162,9 @@ COPY backend/migrations ./migrations
 # Copy UI files
 COPY --from=backend-build /app/ui/build ./ui/build
 
-# Copy cloud static HTML template (injected into index.html at startup when IS_CLOUD=true)
-COPY frontend/cloud-root-content.html /app/cloud-root-content.html
-
-# Copy agent binaries (both architectures) — served by the backend
-# at GET /api/v1/system/agent?arch=amd64|arm64
-COPY --from=agent-build /agent-binaries ./agent-binaries
+# Copy verification agent binaries (both architectures) — served by the backend
+# at GET /api/v1/system/verification-agent?arch=amd64|arm64
+RUN mkdir -p ./agent-binaries
 COPY --from=verification-agent-build /verification-agent-binaries/* ./agent-binaries/
 
 # Bake .env.example as /.env so the binary has defaults when no env file is
@@ -269,15 +229,11 @@ cat > /app/ui/build/runtime-config.js <<JSEOF
 // Runtime configuration injected at container startup
 // This file is generated dynamically and should not be edited manually
 window.__RUNTIME_CONFIG__ = {
-  IS_CLOUD: '\${IS_CLOUD:-false}',
-  IS_DISABLE_CLOUD_NOTICE: '\${IS_DISABLE_CLOUD_NOTICE:-false}',
   GITHUB_CLIENT_ID: '\${GITHUB_CLIENT_ID:-}',
   GOOGLE_CLIENT_ID: '\${GOOGLE_CLIENT_ID:-}',
   IS_EMAIL_CONFIGURED: '\$IS_EMAIL_CONFIGURED',
   CLOUDFLARE_TURNSTILE_SITE_KEY: '\${CLOUDFLARE_TURNSTILE_SITE_KEY:-}',
-  CONTAINER_ARCH: '\${CONTAINER_ARCH:-unknown}',
-  CLOUD_PRICE_PER_GB: '\${CLOUD_PRICE_PER_GB:-}',
-  CLOUD_PADDLE_CLIENT_TOKEN: '\${CLOUD_PADDLE_CLIENT_TOKEN:-}'
+  CONTAINER_ARCH: '\${CONTAINER_ARCH:-unknown}'
 };
 JSEOF
 
@@ -287,32 +243,6 @@ if [ -n "\${ANALYTICS_SCRIPT:-}" ]; then
     echo "Injecting analytics script..."
     sed -i "s#</head>#  \${ANALYTICS_SCRIPT}\\
   </head>#" /app/ui/build/index.html
-  fi
-fi
-
-# Inject Paddle script if client token is provided (only if not already injected)
-if [ -n "\${CLOUD_PADDLE_CLIENT_TOKEN:-}" ]; then
-  if ! grep -q "cdn.paddle.com" /app/ui/build/index.html 2>/dev/null; then
-    echo "Injecting Paddle script..."
-    sed -i "s#</head>#  <script src=\"https://cdn.paddle.com/paddle/v2/paddle.js\"></script>\\
-  </head>#" /app/ui/build/index.html
-  fi
-fi
-
-# Inject static HTML into root div for cloud mode (payment system requires visible legal links)
-if [ "\${IS_CLOUD:-false}" = "true" ]; then
-  if ! grep -q "cloud-static-content" /app/ui/build/index.html 2>/dev/null; then
-    echo "Injecting cloud static HTML content..."
-    perl -i -pe '
-      BEGIN {
-        open my \$fh, "<", "/app/cloud-root-content.html" or die;
-        local \$/;
-        \$c = <\$fh>;
-        close \$fh;
-        \$c =~ s/\\n/ /g;
-      }
-      s/<div id="root"><\\/div>/<div id="root"><!-- cloud-static-content --><noscript>\$c<\\/noscript><\\/div>/
-    ' /app/ui/build/index.html
   fi
 fi
 
@@ -447,33 +377,34 @@ WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'databasus')
 \\q
 SQL
 
+# ========= Refuse to start if legacy WAL backup data exists =========
+# The agent-based WAL_V1 backup type was removed. Existing installs with
+# WAL-mode databases must downgrade, manually remove them and then upgrade.
+echo "Checking for legacy WAL backup configuration..."
+WAL_CHECK_DSN="postgres://postgres:Q1234567@localhost:5437/databasus"
+
+WAL_CHECK_COL=\$(gosu databasus \$PG_BIN/psql "\$WAL_CHECK_DSN" -tA -c "SELECT 1 FROM information_schema.columns WHERE table_name='postgresql_databases' AND column_name='backup_type' LIMIT 1" 2>/dev/null || true)
+
+if [ "\$WAL_CHECK_COL" = "1" ]; then
+    WAL_CHECK_ROW=\$(gosu databasus \$PG_BIN/psql "\$WAL_CHECK_DSN" -tA -c "SELECT 1 FROM postgresql_databases WHERE backup_type='WAL_V1' LIMIT 1" 2>/dev/null || true)
+    if [ "\$WAL_CHECK_ROW" = "1" ]; then
+        echo ""
+        echo "=========================================="
+        echo "ERROR: Agent (WAL_V1) backup approach is no longer supported."
+        echo "=========================================="
+        echo ""
+        echo "Please downgrade to version 3.42.0, remove all WAL-mode databases"
+        echo "manually and then upgrade again. This safeguard exists to avoid"
+        echo "corrupting already-set-up agents."
+        echo ""
+        echo "=========================================="
+        exit 1
+    fi
+fi
+echo "No legacy WAL backup data detected."
+
 # Start the main application
 echo "Starting Databasus application..."
-
-# Check and warn about external database/Valkey usage
-if [ -n "\${DANGEROUS_EXTERNAL_DATABASE_DSN:-}" ]; then
-    echo ""
-    echo "=========================================="
-    echo "WARNING: Using external database"
-    echo "=========================================="
-    echo "DANGEROUS_EXTERNAL_DATABASE_DSN is set."
-    echo "Application will connect to external PostgreSQL instead of internal instance."
-    echo "Internal PostgreSQL is still running in the background."
-    echo "=========================================="
-    echo ""
-fi
-
-if [ -n "\${DANGEROUS_VALKEY_HOST:-}" ]; then
-    echo ""
-    echo "=========================================="
-    echo "WARNING: Using external Valkey"
-    echo "=========================================="
-    echo "DANGEROUS_VALKEY_HOST is set."
-    echo "Application will connect to external Valkey instead of internal instance."
-    echo "Internal Valkey is still running in the background."
-    echo "=========================================="
-    echo ""
-fi
 
 exec gosu databasus ./main
 EOF
