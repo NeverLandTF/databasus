@@ -240,6 +240,10 @@ jobs:
         - /runner-cache/go-pkg:/go/pkg/mod
         - /runner-cache/go-build:/root/.cache/go-build
         - /runner-cache/apt-archives:/var/cache/apt/archives
+        # Identity-mapped scratch dir: physical restore/boot tests bind their t.TempDir() into
+        # sibling containers (recovery script's pg_combinebackup, bound-volume boot). The host
+        # daemon resolves bind sources, so the path must exist identically inside and on the host.
+        - /runner-cache/test-tmp:/runner-cache/test-tmp
     steps:
       - name: Install Docker CLI
         run: |
@@ -280,6 +284,9 @@ jobs:
           # before starting so a stale container can't collide with this run. Only
           # org.testcontainers-labelled ones match — compose services are untouched.
           docker rm -f $(docker ps -aq --filter label=org.testcontainers=true) 2>/dev/null || true
+          # Same non-ephemeral-runner reasoning: clear stale per-run reconstruction dirs from the
+          # identity-mapped scratch volume so a crashed run can't collide with this one.
+          rm -rf /runner-cache/test-tmp/* 2>/dev/null || true
 
       - name: Start test containers
         run: |
@@ -313,6 +320,8 @@ jobs:
           # These paths match what's configured in config.go
           mkdir -p databasus-data/backups
           mkdir -p databasus-data/temp
+          # Scratch dir for $TMPDIR below; identity-mapped so sibling-container binds resolve.
+          mkdir -p /runner-cache/test-tmp
 
       - name: Install database client dependencies
         run: |
@@ -350,6 +359,9 @@ jobs:
           # runner; cleanup is handled by t.Cleanup plus the label-filter step below.
           TESTCONTAINERS_HOST_OVERRIDE: 172.17.0.1
           TESTCONTAINERS_RYUK_DISABLED: "true"
+          # t.TempDir() honors $TMPDIR. Point it at the identity-mapped scratch volume so the
+          # physical restore/boot tests' bind sources exist at the same path on the host daemon.
+          TMPDIR: /runner-cache/test-tmp
           # Each package runs in its own metadata DB + Valkey logical DB, so
           # packages run in parallel; -p must equal the provisioned worker count.
           TEST_PARALLEL_WORKERS: "8"
@@ -363,6 +375,8 @@ jobs:
           # Safety net: t.Cleanup terminates MongoDB testcontainers, but a panicking
           # test can skip it. Remove anything testcontainers-go labelled.
           docker rm -f $(docker ps -aq --filter label=org.testcontainers=true) 2>/dev/null || true
+          # Safety net for the scratch volume: t.TempDir() self-cleans, but a panic can skip it.
+          rm -rf /runner-cache/test-tmp/* 2>/dev/null || true
 
       - name: Stop test containers
         if: always()
