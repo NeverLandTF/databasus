@@ -82,8 +82,8 @@ func Test_ClaimVerification_WhenServer200_SendsNestedMaxRamMbAndDeserializes(t *
 	assert.InDelta(t, 120.5, assignment.BackupSizeMb, 0.001)
 	assert.InDelta(t, 800.25, assignment.MaxContainerDiskMb, 0.001)
 	assert.Equal(t, "POSTGRES_LOGICAL", assignment.Database.Type)
-	require.NotNil(t, assignment.Database.Postgresql)
-	assert.Equal(t, "16", assignment.Database.Postgresql.Version)
+	require.NotNil(t, assignment.Database.PostgresqlLogical)
+	assert.Equal(t, "16", assignment.Database.PostgresqlLogical.Version)
 }
 
 func Test_ClaimVerification_WhenServer204_ReturnsNilNoError(t *testing.T) {

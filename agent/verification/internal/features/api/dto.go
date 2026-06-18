@@ -41,8 +41,8 @@ type AssignedPostgresql struct {
 }
 
 type AssignedDatabase struct {
-	Type       string              `json:"type"`
-	Postgresql *AssignedPostgresql `json:"postgresql"`
+	Type              string              `json:"type"`
+	PostgresqlLogical *AssignedPostgresql `json:"postgresqlLogical"`
 }
 
 type JobAssignment struct {

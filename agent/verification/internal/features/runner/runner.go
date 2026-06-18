@@ -532,15 +532,15 @@ func pgMajorFromDatabase(db api.AssignedDatabase) (string, error) {
 		return "", fmt.Errorf("unsupported database type %q (v1 is Postgres only)", db.Type)
 	}
 
-	if db.Postgresql == nil || db.Postgresql.Version == "" {
+	if db.PostgresqlLogical == nil || db.PostgresqlLogical.Version == "" {
 		return "", errors.New("assignment missing postgresql version")
 	}
 
-	if !slices.Contains(supportedMajors, db.Postgresql.Version) {
-		return "", fmt.Errorf("unsupported postgres major %q", db.Postgresql.Version)
+	if !slices.Contains(supportedMajors, db.PostgresqlLogical.Version) {
+		return "", fmt.Errorf("unsupported postgres major %q", db.PostgresqlLogical.Version)
 	}
 
-	return db.Postgresql.Version, nil
+	return db.PostgresqlLogical.Version, nil
 }
 
 func backupDownloadBackoff(attempt int) time.Duration {
