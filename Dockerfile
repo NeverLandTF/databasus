@@ -88,6 +88,12 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
 
 
 # ========= RUNTIME =========
+# In this final image we ship only what the running app actually needs:
+#   - Build-only tooling (compilers, codegen, key fetchers) stays in the earlier
+#     stages above and never reaches here.
+#   - Anything pulled in for a single build step is purged within the same layer.
+#   - We keep this tight because every extra binary widens the attack surface and
+#     adds another CVE to track.
 FROM debian:bookworm-slim
 
 # Add version metadata to runtime image
@@ -101,25 +107,31 @@ ENV CONTAINER_ARCH=$TARGETARCH
 ENV ENV_MODE=production
 
 # ========= Install all apt packages in a single layer =========
-# Combines base packages + PostgreSQL 17 (pgdg repo) + Valkey (greensec repo) + rclone
-# into one RUN to minimise layer count and cache-export overhead.
-# Valkey is only accessible internally (localhost) — not exposed outside container.
+# Base packages + PostgreSQL 17 (pgdg repo) + Valkey (greensec repo) + rclone, in
+# one RUN to minimise layer count and cache-export overhead.
+#
+#   - wget: build-only — fetches the repo signing keys, then purged at the end of
+#     this RUN (see the "minimal attack surface" note on the runtime stage above).
+#   - Repo keys: scoped signed-by keyrings, not the deprecated global apt-key trust
+#     store, so a compromised repo key cannot vouch for any other repository.
+#   - Codename: hardcoded "bookworm" (base image is pinned), so no lsb-release.
+#   - Valkey: bound to localhost only — never exposed outside the container.
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-      wget ca-certificates gnupg lsb-release sudo gosu curl unzip xz-utils \
-      libncurses5 libncurses6 rclone \
-      libmariadb3 \
-      libgnutls30; \
-    wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -; \
-    echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+      ca-certificates gosu rclone \
+      libncurses5 libncurses6 libmariadb3 libgnutls30 \
+      wget; \
+    wget -qO /usr/share/keyrings/pgdg.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc; \
+    echo "deb [signed-by=/usr/share/keyrings/pgdg.asc] http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" \
       > /etc/apt/sources.list.d/pgdg.list; \
-    wget -O /usr/share/keyrings/greensec.github.io-valkey-debian.key \
+    wget -qO /usr/share/keyrings/greensec.github.io-valkey-debian.key \
       https://greensec.github.io/valkey-debian/public.key; \
-    echo "deb [signed-by=/usr/share/keyrings/greensec.github.io-valkey-debian.key] https://greensec.github.io/valkey-debian/repo $(lsb_release -cs) main" \
+    echo "deb [signed-by=/usr/share/keyrings/greensec.github.io-valkey-debian.key] https://greensec.github.io/valkey-debian/repo bookworm main" \
       > /etc/apt/sources.list.d/valkey-debian.list; \
     apt-get update; \
     apt-get install -y --no-install-recommends postgresql-17 valkey; \
+    apt-get purge -y --auto-remove wget; \
     rm -rf /var/lib/apt/lists/*
 
 # ========= Pre-built DB client binaries (PG, MySQL, MariaDB, MongoDB) =========
