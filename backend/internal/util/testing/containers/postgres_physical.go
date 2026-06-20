@@ -12,8 +12,18 @@ import (
 	"github.com/moby/moby/api/types/container"
 	"github.com/testcontainers/testcontainers-go"
 	tcexec "github.com/testcontainers/testcontainers-go/exec"
+	"github.com/testcontainers/testcontainers-go/network"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
+
+// physicalPrimaryAlias is the network alias the standby resolves its primary by. Both containers
+// must share a user-defined network for DNS by alias — the default bridge resolves no names.
+const physicalPrimaryAlias = "databasus-primary"
+
+// physicalStandbySlotName is the physical replication slot the standby creates on the primary to
+// pin WAL until it has streamed it. Distinct from the databasus_* slots Databasus manages on the
+// node it backs up.
+const physicalStandbySlotName = "databasus_test_standby"
 
 // physicalDataDirTmpfsOptions sizes the tmpfs for physical containers well above the generic
 // logical size: a replication source retains WAL (wal_keep_size plus a slot that pins every
@@ -25,6 +35,7 @@ const physicalDataDirTmpfsOptions = "rw,size=2g"
 // physicalPostgresOptions configures a replication-capable source container.
 type physicalPostgresOptions struct {
 	summarizeWal            bool
+	fullPageWrites          bool
 	withTablespace          bool
 	omitReplicationHbaEntry bool
 	maxConnections          int
@@ -93,8 +104,16 @@ func physicalPostgresCmd(opts physicalPostgresOptions) []string {
 		summarize = "summarize_wal=off"
 	}
 
+	// pg_basebackup from a standby refuses a cluster whose WAL was generated with full_page_writes=off
+	// ("backup ... is corrupt"), so the replication-pair callers turn it on; single-node sources keep
+	// it off for the throwaway-durability speedup.
+	fullPageWrites := "full_page_writes=off"
+	if opts.fullPageWrites {
+		fullPageWrites = "full_page_writes=on"
+	}
+
 	cmd := []string{
-		"-c", "fsync=off", "-c", "full_page_writes=off", "-c", "synchronous_commit=off",
+		"-c", "fsync=off", "-c", fullPageWrites, "-c", "synchronous_commit=off",
 		"-c", "wal_level=logical", "-c", summarize,
 		"-c", "max_wal_senders=10", "-c", "max_replication_slots=10", "-c", "wal_keep_size=512MB",
 	}
@@ -135,6 +154,137 @@ func StartPhysicalPostgres(t *testing.T, image string, opts ...PhysicalPostgresO
 	}
 
 	return start(t, req, postgresPort)
+}
+
+// StartPhysicalPrimaryWithStandby boots a replication-capable primary and a streaming standby that
+// clones it with pg_basebackup over a shared network, returning both endpoints (primary first).
+// Promoting the standby (PromoteStandby) bumps its timeline while the postmaster stays up, so a
+// pg_receivewal already streaming from it observes the switch and fetches the new timeline's
+// .history file — the failover path issue #643 regressed. The network and both containers are torn
+// down with the test.
+func StartPhysicalPrimaryWithStandby(
+	t *testing.T,
+	image string,
+	opts ...PhysicalPostgresOption,
+) (Endpoint, Endpoint) {
+	t.Helper()
+
+	options := physicalPostgresOptions{summarizeWal: true}
+	for _, apply := range opts {
+		apply(&options)
+	}
+
+	// A base backup taken on the standby requires full_page_writes — force it on for both nodes.
+	options.fullPageWrites = true
+
+	replicationNetwork, err := network.New(context.Background())
+	if err != nil {
+		t.Fatalf("failed to create replication test network: %v", err)
+	}
+	t.Cleanup(func() { _ = replicationNetwork.Remove(context.Background()) })
+
+	primary := startPhysicalPrimaryOnNetwork(t, image, options, replicationNetwork.Name)
+	standby := startPhysicalStandbyOnNetwork(t, image, options, replicationNetwork.Name)
+
+	return primary, standby
+}
+
+// startPhysicalPrimaryOnNetwork boots the replication source joined to networkName under
+// physicalPrimaryAlias, so the standby can reach it by name. It mirrors StartPhysicalPostgres'
+// request otherwise (replication pg_hba rule, durability and WAL flags).
+func startPhysicalPrimaryOnNetwork(
+	t *testing.T,
+	image string,
+	options physicalPostgresOptions,
+	networkName string,
+) Endpoint {
+	t.Helper()
+
+	var files []testcontainers.ContainerFile
+	if !options.omitReplicationHbaEntry {
+		files = append(files, allowReplicationInitScript())
+	}
+	if options.withTablespace {
+		files = append(files, createTablespaceInitScript())
+	}
+
+	req := testcontainers.ContainerRequest{
+		Image:          image,
+		ExposedPorts:   []string{postgresPort},
+		Env:            postgresEnv(),
+		Cmd:            physicalPostgresCmd(options),
+		Files:          files,
+		Tmpfs:          map[string]string{postgresDataDir(image): physicalDataDirTmpfsOptions},
+		Networks:       []string{networkName},
+		NetworkAliases: map[string][]string{networkName: {physicalPrimaryAlias}},
+		WaitingFor:     postgresReady(),
+	}
+
+	return start(t, req, postgresPort)
+}
+
+// startPhysicalStandbyOnNetwork boots a standby that clones the primary (reached by alias on
+// networkName) before postgres starts. A custom entrypoint runs pg_basebackup -R into PGDATA, then
+// hands the same WAL flags to the image entrypoint, which serves the cloned cluster as a streaming
+// standby. The readiness log differs from a primary ("read-only connections"), so it gets its own
+// wait.
+func startPhysicalStandbyOnNetwork(
+	t *testing.T,
+	image string,
+	options physicalPostgresOptions,
+	networkName string,
+) Endpoint {
+	t.Helper()
+
+	req := testcontainers.ContainerRequest{
+		Image:        image,
+		ExposedPorts: []string{postgresPort},
+		Env:          postgresEnv(),
+		Entrypoint:   []string{"/usr/local/bin/databasus-standby-entrypoint.sh"},
+		Cmd:          physicalPostgresCmd(options),
+		Files: []testcontainers.ContainerFile{{
+			Reader:            strings.NewReader(standbyEntrypointScript()),
+			ContainerFilePath: "/usr/local/bin/databasus-standby-entrypoint.sh",
+			FileMode:          0o755,
+		}},
+		Tmpfs:      map[string]string{postgresDataDir(image): physicalDataDirTmpfsOptions},
+		Networks:   []string{networkName},
+		WaitingFor: standbyReady(),
+	}
+
+	return start(t, req, postgresPort)
+}
+
+// standbyEntrypointScript clones the primary into an empty PGDATA and writes the standby recovery
+// config (-R records the alias conninfo, password included so streaming reconnects). It runs as
+// root (the image default) and drops to postgres for the clone so the cluster files are owned by
+// the server uid, then exec's the image entrypoint to serve it. The final "$@" forwards the WAL
+// flags passed as the container command.
+func standbyEntrypointScript() string {
+	return `#!/bin/bash
+set -euo pipefail
+mkdir -p "$PGDATA"
+chown -R postgres:postgres "$PGDATA"
+echo "databasus-standby: waiting for primary to accept connections"
+until pg_isready -h ` + physicalPrimaryAlias + ` -p 5432 -U ` + PostgresUsername + ` >/dev/null 2>&1; do sleep 1; done
+echo "databasus-standby: cloning primary via pg_basebackup"
+gosu postgres pg_basebackup -D "$PGDATA" -R -X stream -C -S ` + physicalStandbySlotName + ` -w \
+  -d "host=` + physicalPrimaryAlias + ` port=5432 user=` + PostgresUsername +
+		` password=` + PostgresPassword + ` dbname=postgres"
+echo "databasus-standby: starting as a streaming standby"
+exec docker-entrypoint.sh postgres "$@"
+`
+}
+
+// standbyReady waits on the standby's own readiness line. A node in archive recovery logs "ready to
+// accept read-only connections" (once, after reaching consistency), not the primary's twice-logged
+// "ready to accept connections", so postgresReady would hang here.
+func standbyReady() wait.Strategy {
+	return wait.ForAll(
+		wait.ForLog("database system is ready to accept read-only connections").
+			WithStartupTimeout(postgresStartupTimeout),
+		wait.ForListeningPort(postgresPort),
+	)
 }
 
 // StartPostgresWithBoundDataDir boots a normal postgres container through its image entrypoint (not

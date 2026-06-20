@@ -116,6 +116,68 @@ func RunFullTwoIncrementalsPlusWalRecoversToTarget(t *testing.T, version, image 
 		"PITR must replay the chain plus rows committed at/before the target and drop the row after it")
 }
 
+// RunWalStreamCatalogsHistoryOnTimelineSwitch exercises the failover path no other test covers:
+// Databasus streams WAL from a standby, the standby is promoted to a new timeline mid-stream, and
+// the live WAL stream supervisor must observe the switch and catalog the new timeline's .history
+// row. Promotion makes pg_receivewal fetch 00000002.history, driving the supervisor's
+// handleHistoryFile -> UploadHistoryFile path — the exact insert that regressed in issue #643:
+// keyed on the postgresql_physical_databases PK it violated fk_physical_wal_history_files_database_id
+// and aborted the whole WAL stream. The test asserts the history row is cataloged on the parent
+// databases.id (and not the physical PK), proving the failover path runs end to end.
+//
+// It deliberately stops at the catalog assertion rather than running a cross-timeline PITR restore:
+// the restore-set resolver loads a chain's WAL on the FULL's timeline only
+// (buildChainView -> FindByChainSpan keys on full.TimelineID), so it cannot ship post-fork WAL and a
+// cross-timeline restore is unsupported by the current resolver regardless of issue #643. The
+// single-timeline PITR restore is already covered by RunFullTwoIncrementalsPlusWalRecoversToTarget.
+func RunWalStreamCatalogsHistoryOnTimelineSwitch(t *testing.T, version, image string) {
+	if testing.Short() {
+		t.Skip("clones a standby and promotes it across a timeline switch; skipped in -short")
+	}
+
+	primary, standby := containers.StartPhysicalPrimaryWithStandby(t, image)
+
+	// Databasus backs up the STANDBY: pg_basebackup and pg_receivewal run against it, so promoting it
+	// makes the live stream follow the timeline switch — the production failover path. Backups run as
+	// the seeded superuser (a standby is read-only, so the replication-only-user provisioning the
+	// single-node fixtures do would fail its CREATE ROLE here).
+	router := newPhysicalTestRouter()
+	fixture := postgresql_executor.SetupPhysicalDBForScheduledBackupVersion(
+		t, standby.Host, standby.Port, version, postgresql_physical.BackupTypeFullIncrementalAndWalStream)
+
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Minute)
+	defer cancel()
+
+	primaryConn := openConnAt(t, primary.Host, primary.Port)
+	standbyConn := openSourceTestDBConn(t, fixture)
+
+	// Timeline 1: seed and drive WAL on the primary, let it replicate to the standby, and back the
+	// standby up. Writes must hit the primary — the standby is read-only until promotion.
+	createMarkerTable(t, ctx, primaryConn)
+	insertMarker(t, ctx, primaryConn, "tl1-row", "row-on-tl1")
+	waitForMarkerOnStandby(t, ctx, standbyConn, "tl1-row", 60*time.Second)
+
+	enablePhysicalBackupsViaAPI(t, router, fixture, true)
+	chain := waitForChainBackups(t, router, fixture, 0, 3*time.Minute)
+
+	// Stream a couple of committed TL1 segments so the slot is actively consuming when we promote.
+	streamPostFullSegments(t, ctx, router, primaryConn, fixture, chainTipStopLSN(t, chain), 2, 90*time.Second)
+
+	// Promote: the standby becomes a primary on timeline 2. pg_receivewal follows the switch and
+	// uploads 00000002.history, driving the issue #643 path in the live supervisor.
+	PromoteStandby(t, ctx, standbyConn)
+
+	// A write on the new timeline guarantees TL2 WAL, so pg_receivewal advances onto timeline 2 and
+	// ships its .history.
+	insertMarker(t, ctx, standbyConn, "tl2-row", "row-on-tl2")
+	_, err := postgresql_executor.GenerateWalActivity(ctx, standbyConn, 16*1024*1024)
+	require.NoError(t, err)
+
+	// The regression guard: the supervisor must catalog the timeline-2 history row on the parent
+	// databases.id. Pre-fix the FK violation drops it and the wait fails.
+	waitForTimelineHistoryOnParent(t, fixture, 2, 60*time.Second)
+}
+
 // RunBootViaEntrypointVolumeMountRecoversBaseRows reproduces the user's docker-compose flow: restore on
 // the host in --combine-image mode, then serve the result through the postgres image's own entrypoint
 // with the output bind-mounted at the image VOLUME (the volume root on PG 18). The booted cluster must

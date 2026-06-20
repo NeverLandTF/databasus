@@ -20,9 +20,16 @@ ARG PG_MAJOR
 # Extensions whose CREATE EXTENSION works once the files are present, plus the
 # Tier-2 monitoring extensions that additionally need shared_preload_libraries
 # (set below). The official image already configures the apt.postgresql.org repo
-# these packages come from. The list is overridable so the release matrix can
-# trim a package PGDG does not build for a given major/arch — a missing package
-# fails the build loudly rather than silently shipping a half-populated image.
+# these packages come from, so every entry must be installable from PGDG apt for
+# all majors 12-18 (verified). A missing package fails the build loudly rather
+# than silently shipping a half-populated image — important because the agent
+# tolerates missing extensions at restore time, so a thinned image would mark
+# such backups "verified" without actually exercising the extension.
+#
+# Intentionally NOT bundled: topn (Citus), pg_hashids, anonymizer
+# (postgresql_anonymizer) and pg_stat_monitor (Percona). PGDG apt does not
+# package these — they need source builds or Percona's own repo. Add them via
+# that route (not this list) if verification coverage for them is ever required.
 ARG EXTENSION_PACKAGES="\
 postgresql-${PG_MAJOR}-postgis-3 \
 postgresql-${PG_MAJOR}-pgrouting \
@@ -33,20 +40,16 @@ postgresql-${PG_MAJOR}-partman \
 postgresql-${PG_MAJOR}-repack \
 postgresql-${PG_MAJOR}-hypopg \
 postgresql-${PG_MAJOR}-hll \
-postgresql-${PG_MAJOR}-topn \
 postgresql-${PG_MAJOR}-set-user \
 postgresql-${PG_MAJOR}-pgaudit \
-postgresql-${PG_MAJOR}-anonymizer \
 postgresql-${PG_MAJOR}-ip4r \
 postgresql-${PG_MAJOR}-semver \
-postgresql-${PG_MAJOR}-pg-hashids \
 postgresql-${PG_MAJOR}-http \
 postgresql-${PG_MAJOR}-mysql-fdw \
 postgresql-${PG_MAJOR}-tds-fdw \
 postgresql-${PG_MAJOR}-pg-stat-kcache \
 postgresql-${PG_MAJOR}-pg-qualstats \
 postgresql-${PG_MAJOR}-pg-wait-sampling \
-postgresql-${PG_MAJOR}-pg-stat-monitor \
 postgresql-plpython3-${PG_MAJOR} \
 postgresql-plperl-${PG_MAJOR} \
 postgresql-pltcl-${PG_MAJOR}"
@@ -56,7 +59,7 @@ postgresql-pltcl-${PG_MAJOR}"
 # Postgres refuse to start. Appending to the initdb sample means every fresh
 # PGDATA (the verification container is ephemeral) inherits it; the agent does not
 # pass -c shared_preload_libraries, so this value stands at runtime.
-ARG PRELOAD_LIBRARIES="pg_stat_statements,pg_stat_kcache,pg_qualstats,pg_wait_sampling,pg_stat_monitor,pgaudit,set_user"
+ARG PRELOAD_LIBRARIES="pg_stat_statements,pg_stat_kcache,pg_qualstats,pg_wait_sampling,pgaudit,set_user"
 
 # Root is the base image's user; the official entrypoint still gosu-drops to the
 # postgres user before exec, so the agent's hardened runtime is unchanged.

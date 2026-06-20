@@ -24,6 +24,7 @@ import (
 	backups_core_enums "databasus-backend/internal/features/backups/backups/core/enums"
 	"databasus-backend/internal/features/backups/backups/core/physical/chain_view"
 	physical_enums "databasus-backend/internal/features/backups/backups/core/physical/enums"
+	physical_repositories "databasus-backend/internal/features/backups/backups/core/physical/repositories"
 	backups_dto_physical "databasus-backend/internal/features/backups/backups/dto/physical"
 	postgresql_executor "databasus-backend/internal/features/backups/backups/usecases/physical/postgresql"
 	backups_config_physical "databasus-backend/internal/features/backups/config/physical"
@@ -971,19 +972,116 @@ func queryMarkerRowsAt(t *testing.T, host string, port int) []string {
 func openSourceTestDBConn(t *testing.T, fixture *postgresql_executor.PhysicalDBFixture) *pgx.Conn {
 	t.Helper()
 
+	return openConnAt(t, fixture.DB.PostgresqlPhysical.Host, fixture.DB.PostgresqlPhysical.Port)
+}
+
+// openConnAt opens a superuser connection (the seeded testuser) to a PostgreSQL endpoint, closed on
+// cleanup. The cross-timeline test reaches the primary through this, since the fixture's own
+// connection targets the standby Databasus backs up.
+func openConnAt(t *testing.T, host string, port int) *pgx.Conn {
+	t.Helper()
+
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		fixture.DB.PostgresqlPhysical.Host,
-		fixture.DB.PostgresqlPhysical.Port,
-		restoredPgUser,
-		restoredPgPassword,
-		restoredPgDatabase,
-	)
+		host, port, restoredPgUser, restoredPgPassword, restoredPgDatabase)
 
 	conn, err := pgx.Connect(t.Context(), dsn)
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = conn.Close(context.Background()) })
 
 	return conn
+}
+
+// waitForMarkerOnStandby blocks until phase is visible on the standby, i.e. streaming replication
+// has carried the primary's write across. The FULL is taken from the standby, so a row must land
+// there before it can appear in the base backup. The marker table itself replicates via WAL too, so
+// a query before it exists errors with undefined_table — treated here as "not yet replicated".
+func waitForMarkerOnStandby(
+	t *testing.T,
+	ctx context.Context,
+	standbyConn *pgx.Conn,
+	phase string,
+	timeout time.Duration,
+) {
+	t.Helper()
+
+	deadline := time.Now().UTC().Add(timeout)
+	for time.Now().UTC().Before(deadline) {
+		var exists bool
+		if err := standbyConn.QueryRow(ctx,
+			`SELECT EXISTS(SELECT 1 FROM restore_marker WHERE phase = $1)`, phase,
+		).Scan(&exists); err == nil && exists {
+			return
+		}
+
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	t.Fatalf("marker %q never replicated to the standby within %s", phase, timeout)
+}
+
+// PromoteStandby promotes a streaming standby to a primary on a fresh timeline and waits until it
+// has left recovery. pg_promote keeps the postmaster up, so a pg_receivewal already streaming from
+// this node follows the switch and fetches the new timeline's .history file — the path issue #643
+// regressed. Callers can write on the new timeline as soon as it returns.
+func PromoteStandby(t *testing.T, ctx context.Context, standbyConn *pgx.Conn) {
+	t.Helper()
+
+	var promoted bool
+	require.NoError(t, standbyConn.QueryRow(ctx,
+		`SELECT pg_promote(wait => true, wait_seconds => 60)`).Scan(&promoted))
+	require.True(t, promoted, "pg_promote must finish promotion within its wait window")
+
+	deadline := time.Now().UTC().Add(30 * time.Second)
+	for time.Now().UTC().Before(deadline) {
+		var isInRecovery bool
+		require.NoError(t, standbyConn.QueryRow(ctx, `SELECT pg_is_in_recovery()`).Scan(&isInRecovery))
+		if !isInRecovery {
+			return
+		}
+
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	t.Fatal("standby still in recovery 30s after pg_promote reported success")
+}
+
+// waitForTimelineHistoryOnParent blocks until the WAL stream supervisor has cataloged the timeline's
+// .history row, then asserts it is keyed on the parent databases.id and not the
+// postgresql_physical_databases PK. Pre-fix (issue #643) the insert violated
+// fk_physical_wal_history_files_database_id and the row never appeared, so this both proves the
+// failover path runs end to end and guards the regression.
+func waitForTimelineHistoryOnParent(
+	t *testing.T,
+	fixture *postgresql_executor.PhysicalDBFixture,
+	timelineID int,
+	timeout time.Duration,
+) {
+	t.Helper()
+
+	historyRepo := physical_repositories.GetWalHistoryRepository()
+	parentDatabaseID := fixture.DB.ID
+	physicalPK := fixture.DB.PostgresqlPhysical.ID
+
+	deadline := time.Now().UTC().Add(timeout)
+	for time.Now().UTC().Before(deadline) {
+		byParent, err := historyRepo.FindByDatabaseTimeline(parentDatabaseID, timelineID)
+		require.NoError(t, err)
+
+		if byParent != nil {
+			byPhysicalPK, err := historyRepo.FindByDatabaseTimeline(physicalPK, timelineID)
+			require.NoError(t, err)
+			require.Nil(t, byPhysicalPK,
+				"timeline-%d history must be keyed on the parent databases.id, not the physical PK", timelineID)
+
+			return
+		}
+
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	t.Fatalf("WAL stream supervisor never cataloged the timeline-%d history row on the parent databases.id "+
+		"within %s (issue #643: keying on the physical PK fails fk_physical_wal_history_files_database_id)",
+		timelineID, timeout)
 }
 
 func connectWithRetry(t *testing.T, dsn string, timeout time.Duration) *pgx.Conn {
