@@ -363,6 +363,67 @@ func Test_SubmitReport_WhenStatusCompleted_PersistsResultsAndTableStats(t *testi
 	)
 }
 
+func Test_SubmitReport_WhenCompletedWithNonZeroExitCode_MarksCompleted(t *testing.T) {
+	router := createTestRouter()
+	owner := users_testing.CreateTestUser(users_enums.UserRoleAdmin)
+	workspace := workspaces_testing.CreateTestWorkspace("ws "+uuid.New().String(), owner, router)
+	defer workspaces_testing.RemoveTestWorkspace(workspace, router)
+
+	testStorage := storages.CreateTestStorage(workspace.ID)
+	defer storages.RemoveTestStorage(testStorage.ID)
+
+	notifier := notifiers.CreateTestNotifier(workspace.ID)
+	defer notifiers.RemoveTestNotifier(notifier)
+
+	database := databases.CreateTestDatabase(workspace.ID, testStorage, notifier)
+	defer databases.RemoveTestDatabase(database)
+
+	backup := backuping_logical.SeedTestBackup(t, database.ID, testStorage.ID, 100)
+	agent := verification_agents.CreateTestVerificationAgent(t, router, owner.Token, "report-"+uuid.New().String())
+	defer verification_agents.RemoveTestVerificationAgent(t, router, owner.Token, agent.Agent.ID)
+
+	EnqueueManualVerificationViaAPI(t, router, owner.Token, backup.ID)
+	assignment := ClaimVerificationViaAPI(
+		t, router, agent.Agent.ID, agent.Token,
+		AgentCapacity{MaxCPU: 4, MaxRAMMb: 4096, MaxDiskGb: 50, MaxConcurrentJobs: 2},
+	)
+
+	// When the agent tolerates a restore whose only failures were missing
+	// extensions, it reports COMPLETED but carries the real non-zero pg_restore
+	// exit code. The backend must accept that as success (the size guard, not the
+	// exit code, is the arbiter on the COMPLETED path).
+	pgRestoreExit := 1
+	dbSize := int64(80_000_000)
+
+	report := ReportRequest{
+		Status:                  VerificationStatusCompleted,
+		PgRestoreExitCode:       &pgRestoreExit,
+		DBSizeBytesAfterRestore: &dbSize,
+	}
+
+	test_utils.MakePostRequest(
+		t, router,
+		reportPathFor(agent.Agent.ID, assignment.VerificationID),
+		"Bearer "+agent.Token,
+		report,
+		http.StatusNoContent,
+	)
+
+	final := GetVerificationByIDViaAPI(t, router, owner.Token, assignment.VerificationID)
+	assert.Equal(t, VerificationStatusCompleted, final.Status,
+		"a COMPLETED report with a non-zero pg_restore exit (tolerated missing extensions) must not be rejected")
+	require.NotNil(t, final.PgRestoreExitCode)
+	assert.Equal(t, 1, *final.PgRestoreExitCode)
+
+	verifiedBackup := GetBackupViaAPI(t, router, owner.Token, database.ID, backup.ID)
+	assert.Equal(
+		t,
+		backups_core_logical.RestoreVerificationStatusVerifiedSuccessful,
+		verifiedBackup.RestoreVerificationStatus,
+		"a tolerated missing-extension restore is a successful verification",
+	)
+}
+
 func Test_SubmitReport_WhenRowWasReapedWhileAgentWasSilent_Returns410(t *testing.T) {
 	router := createTestRouter()
 	owner := users_testing.CreateTestUser(users_enums.UserRoleAdmin)

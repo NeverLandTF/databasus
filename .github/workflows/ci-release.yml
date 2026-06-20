@@ -117,7 +117,9 @@ jobs:
           sudo apt-get install -y trivy
 
       - name: Trivy Dockerfile misconfiguration scan
-        run: trivy config --severity HIGH,CRITICAL --exit-code 1 Dockerfile
+        run: |
+          trivy config --severity HIGH,CRITICAL --exit-code 1 Dockerfile
+          trivy config --severity HIGH,CRITICAL --exit-code 1 agent/verification/images/postgres/Dockerfile
 
   test-frontend:
     if: github.ref != 'refs/heads/develop'
@@ -657,6 +659,32 @@ jobs:
           docker rmi databasus:smoke-${{ github.sha }} || true
           rm -rf /tmp/databasus-smoke-data || true
 
+  build-verification-image:
+    if: github.ref != 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    needs: [lint-verification-agent, dockerfile-scan]
+    permissions:
+      contents: read
+    steps:
+      - name: Check out code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      # Validate the extension Dockerfile builds (amd64, representative major) on
+      # every PR; the full multi-arch matrix is built at release time below.
+      - name: Build verification image (amd64, no push)
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        with:
+          context: agent/verification/images/postgres
+          push: false
+          platforms: linux/amd64
+          build-args: |
+            PG_MAJOR=16
+          cache-from: type=gha,scope=verification-postgres-16
+          cache-to: type=gha,mode=min,scope=verification-postgres-16
+
   determine-version:
     runs-on: self-hosted
     container:
@@ -792,6 +820,53 @@ jobs:
             databasus/databasus:latest
             databasus/databasus:v${{ needs.determine-version.outputs.new_version }}
             databasus/databasus:${{ github.sha }}
+
+  push-verification-image:
+    runs-on: ubuntu-latest
+    needs: [determine-version, build-verification-image]
+    if: ${{ needs.determine-version.outputs.should_release == 'true' }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        major: ["12", "13", "14", "15", "16", "17", "18"]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up QEMU (enables multi-arch emulation)
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Pin the base to its current manifest digest so the published image is
+      # reproducible rather than tracking a floating postgres:<major> tag.
+      - name: Resolve digest-pinned base image
+        id: base
+        run: |
+          DIGEST=$(docker buildx imagetools inspect postgres:${{ matrix.major }} --format '{{.Manifest.Digest}}')
+          echo "image=postgres:${{ matrix.major }}@${DIGEST}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push verification image
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        with:
+          context: agent/verification/images/postgres
+          push: true
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            PG_MAJOR=${{ matrix.major }}
+            BASE_IMAGE=${{ steps.base.outputs.image }}
+          tags: |
+            databasus/verification-postgres:${{ matrix.major }}
+            databasus/verification-postgres:${{ matrix.major }}-v${{ needs.determine-version.outputs.new_version }}
 
   release:
     runs-on: self-hosted

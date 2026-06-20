@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"slices"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -269,17 +270,25 @@ func (r *Runner) executeJob(ctx context.Context, job *api.JobAssignment) {
 			return
 		}
 
-		if errors.Is(err, restore.ErrRestoreFailed) {
-			if restore.IsDiskExhausted(restoreResult.StderrTail) {
-				// Hitting the estimate-derived ceiling is agent infra, not
-				// proof the backup is corrupt — omit the exit code so the
-				// backend retries (AgentSetupFailed), never BackupRejected.
-				r.reportFailure(ctx, job.VerificationID, nil,
-					fmt.Sprintf("pg_restore hit job disk ceiling: %v", err), runLogger)
+		if !errors.Is(err, restore.ErrRestoreFailed) {
+			// Exec-infrastructure failure (no usable exit code).
+			r.reportFailure(ctx, job.VerificationID, nil,
+				fmt.Sprintf("pg_restore exec: %v", err), runLogger)
 
-				return
-			}
+			return
+		}
 
+		if restore.IsDiskExhausted(restoreResult.StderrTail) {
+			// Hitting the estimate-derived ceiling is agent infra, not proof the
+			// backup is corrupt — omit the exit code so the backend retries
+			// (AgentSetupFailed), never BackupRejected.
+			r.reportFailure(ctx, job.VerificationID, nil,
+				fmt.Sprintf("pg_restore hit job disk ceiling: %v", err), runLogger)
+
+			return
+		}
+
+		if !restore.IsMissingExtensionOnly(restoreResult.StderrTail) {
 			runLogger.Error("pg_restore failed",
 				"exit_code", restoreResult.PgRestoreExitCode,
 				"stderr_tail", restoreResult.StderrTail)
@@ -290,11 +299,16 @@ func (r *Runner) executeJob(ctx context.Context, job *api.JobAssignment) {
 			return
 		}
 
-		// Exec-infrastructure failure (no usable exit code).
-		r.reportFailure(ctx, job.VerificationID, nil,
-			fmt.Sprintf("pg_restore exec: %v", err), runLogger)
-
-		return
+		// The only items pg_restore skipped are CREATE/COMMENT EXTENSION for
+		// extensions this verification environment lacks — the data restored.
+		// Treat the backup as restorable and fall through to stats; the backend's
+		// restored-size check is the remaining safety net.
+		runLogger.Warn(
+			"pg_restore completed with only missing-extension errors; treating backup as restorable",
+			"exit_code", restoreResult.PgRestoreExitCode,
+			"skipped_extensions",
+			strings.Join(restore.ExtractUnavailableExtensions(restoreResult.StderrTail), ","),
+			"stderr_tail", restoreResult.StderrTail)
 	}
 
 	if job.TimescaledbVersion != "" {
