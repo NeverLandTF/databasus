@@ -297,6 +297,18 @@ export default function AdvancedConfigPage() {
                   </tr>
                   <tr>
                     <td>
+                      <code>SMTP_INSECURE_SKIP_VERIFY</code>
+                    </td>
+                    <td data-label="Description">
+                      Set to <code>true</code> to skip TLS certificate
+                      verification when connecting to the SMTP server. Defaults
+                      to <code>false</code>. Use it only for servers with a
+                      self-signed certificate on a trusted network — it disables
+                      protection against man-in-the-middle attacks.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
                       <code>DATABASUS_URL</code>
                     </td>
                     <td data-label="Description">
