@@ -1006,7 +1006,7 @@ func readReplicationSettings(ctx context.Context, conn *pgx.Conn) (*replicationS
 	if err := conn.QueryRow(ctx, `
 		SELECT
 			(SELECT setting FROM pg_settings WHERE name = 'wal_level'),
-			(SELECT setting FROM pg_settings WHERE name = 'summarize_wal'),
+			COALESCE((SELECT setting FROM pg_settings WHERE name = 'summarize_wal'), 'off'),
 			(SELECT setting::int FROM pg_settings WHERE name = 'max_wal_senders'),
 			(SELECT setting::int FROM pg_settings WHERE name = 'max_replication_slots')
 	`).Scan(
