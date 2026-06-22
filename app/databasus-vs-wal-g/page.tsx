@@ -87,8 +87,8 @@ export default function DatabasusVsWalGPage() {
                 it reuses PostgreSQL&apos;s own battle-tested tooling instead of
                 re-inventing it, all behind an intuitive web interface. It works
                 for databases of any size and complexity. Physical backups
-                require PostgreSQL 17 or newer, and older versions fall back to
-                logical <code>pg_dump</code> backups. WAL-G is a command-line
+                require PostgreSQL 17 or newer; on older versions only logical{" "}
+                <code>pg_dump</code> backups are available. WAL-G is a command-line
                 tool that ships its own engine, so it covers physical backups on
                 much older PostgreSQL versions, uses a custom streaming protocol
                 for slightly better performance, supports delta backups (changed
@@ -393,8 +393,8 @@ export default function DatabasusVsWalGPage() {
                 <li>
                   <strong>Logical backups</strong>: Uses <code>pg_dump</code> for
                   portable backups that can be restored to different PostgreSQL
-                  versions. This is also the fallback on PostgreSQL older than 17
-                  and the path for MySQL, MariaDB and MongoDB.
+                  versions. This is also the only backup type on PostgreSQL older
+                  than 17 and the path for MySQL, MariaDB and MongoDB.
                 </li>
                 <li>
                   <strong>Nothing installed on the database</strong>: Backups

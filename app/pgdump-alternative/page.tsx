@@ -354,8 +354,8 @@ export default function PgDumpAlternativePage() {
                 These backups are built on PostgreSQL 17&apos;s native backup
                 mechanism, so Databasus reuses PostgreSQL&apos;s own
                 battle-tested tooling instead of re-inventing it. They require
-                PostgreSQL 17 or newer; on older versions Databasus falls back to
-                logical <code>pg_dump</code> backups. Everything runs remotely
+                PostgreSQL 17 or newer; on older versions only logical{" "}
+                <code>pg_dump</code> backups are available. Everything runs remotely
                 from the Databasus host over the replication protocol, so nothing
                 is installed on the database server. Closed networks are reached
                 through an SSH tunnel to an internal host or a bastion, so the

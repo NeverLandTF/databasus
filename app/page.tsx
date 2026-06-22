@@ -1359,10 +1359,10 @@ export default function Index() {
                   At the same time, unlike pgBackRest and WAL-G, Databasus makes
                   physical, incremental and WAL backups on top of PostgreSQL
                   17&apos;s native approach, so it does not reinvent its own
-                  backup engine. It connects to your databases remotely, reaching
-                  closed networks through an SSH tunnel to the server or a
-                  bastion, so databases that are not publicly exposed can still be
-                  backed up and managed from a single dashboard.{" "}
+                  backup engine. It connects to your databases remotely,
+                  reaching closed networks through an SSH tunnel to the server
+                  or a bastion, so databases that are not publicly exposed can
+                  still be backed up and managed from a single dashboard.{" "}
                   <a
                     href="/faq/#pitr"
                     className="text-blue-400 hover:text-blue-600"
@@ -1492,10 +1492,9 @@ export default function Index() {
                     <li>
                       <strong>Physical</strong> — file-level copy of the entire
                       database cluster. Faster backup and restore for large
-                      datasets than logical dumps. Built on PostgreSQL
-                      17&apos;s native backup mechanism, so we rely on
-                      PostgreSQL&apos;s own battle-tested tooling instead of
-                      re-inventing it
+                      datasets than logical dumps. Built on PostgreSQL 17&apos;s
+                      native backup mechanism, so we rely on PostgreSQL&apos;s
+                      own battle-tested tooling instead of re-inventing it
                     </li>
                     <li>
                       <strong>Full</strong> — a complete, self-contained copy of
@@ -1517,6 +1516,15 @@ export default function Index() {
                       directly to storage with no intermediate files
                     </li>
                   </ul>
+                  <br />
+                  Physical, incremental and WAL backups build on PostgreSQL
+                  17&apos;s native mechanism, so they require PostgreSQL 17 or
+                  newer; on older versions only logical backups are available.
+                  This is intentional: most production databases already run on
+                  PostgreSQL 17 or above, and within roughly two years the older
+                  versions reach end of life. Databasus aims to become the
+                  standard backup tool for databases from PostgreSQL 17 onward.
+                  <br />
                   <br />
                   All of these backups can run over an SSH tunnel if you have a
                   requirement for non-public connections, so the database never
@@ -1572,6 +1580,30 @@ export default function Index() {
                   . The community is a great place to ask questions, share
                   experiences, get help with configuration and stay updated with
                   the latest features and releases.
+                </>
+              }
+            />
+            <FaqItem
+              number="14"
+              question="What is the adoption level of Databasus?"
+              answer={
+                <>
+                  Databasus has over 1 million Docker pulls and 7.5k GitHub
+                  stars. For comparison, pgBackRest and WAL-G sit at around 4.2k
+                  stars each and Barman at about 3.1k, which makes Databasus the
+                  most popular database backup tool on GitHub.
+                  <br />
+                  <br />
+                  It has been accepted into the open-source programs of
+                  Anthropic and OpenAI as an important, critical project. Today
+                  Databasus is used by enterprises, teams and DevOps engineers,
+                  backed by a large and active community.
+                  <br />
+                  <br />
+                  Our goal is to become the standard backup tool for PostgreSQL
+                  from version 17 and above. Databasus is the first backup tool
+                  built on PostgreSQL&apos;s native, efficient and now standard
+                  backup protocol instead of writing its own implementations.
                 </>
               }
             />

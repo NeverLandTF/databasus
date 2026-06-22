@@ -89,8 +89,8 @@ export default function DatabasusVsBarmanPage() {
                 re-inventing it, all behind an intuitive web interface with team
                 features and support for multiple database engines. It works for
                 databases of any size and complexity. Physical backups require
-                PostgreSQL 17 or newer, and older versions fall back to logical{" "}
-                <code>pg_dump</code> backups. Barman (Backup and Recovery
+                PostgreSQL 17 or newer; on older versions only logical{" "}
+                <code>pg_dump</code> backups are available. Barman (Backup and Recovery
                 Manager) ships its own backup engine, so it covers physical
                 backups on much older PostgreSQL versions and adds advanced
                 features like rsync-based incremental backups, streaming
@@ -303,8 +303,8 @@ export default function DatabasusVsBarmanPage() {
                 <li>
                   <strong>Logical backups</strong>: Uses <code>pg_dump</code> for
                   portable backups that can be restored to different PostgreSQL
-                  versions. This is also the fallback on PostgreSQL older than 17
-                  and the path for MySQL, MariaDB and MongoDB.
+                  versions. This is also the only backup type on PostgreSQL older
+                  than 17 and the path for MySQL, MariaDB and MongoDB.
                 </li>
                 <li>
                   <strong>Nothing installed on the database</strong>: Backups

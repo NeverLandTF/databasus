@@ -88,8 +88,8 @@ export default function DatabasusVsPgBackRestPage() {
                 reuses PostgreSQL&apos;s own battle-tested tooling instead of
                 re-inventing it, all behind an intuitive web interface. It works
                 for databases of any size and complexity. Physical backups do
-                require PostgreSQL 17 or newer, and on older versions Databasus
-                falls back to logical <code>pg_dump</code> backups. pgBackRest
+                require PostgreSQL 17 or newer; on older versions only logical{" "}
+                <code>pg_dump</code> backups are available. pgBackRest
                 ships its own backup engine, so it also covers physical and
                 incremental backups on much older PostgreSQL versions, and it
                 adds advanced features like differential backups and delta
@@ -308,8 +308,8 @@ export default function DatabasusVsPgBackRestPage() {
                   <strong>Logical backups</strong>: Uses <code>pg_dump</code> for
                   portable backups that can be restored to different PostgreSQL
                   versions, with selective restore of specific tables or schemas.
-                  This is also the fallback on PostgreSQL older than 17 and the
-                  path for MySQL, MariaDB and MongoDB.
+                  This is also the only backup type on PostgreSQL older than 17
+                  and the path for MySQL, MariaDB and MongoDB.
                 </li>
                 <li>
                   <strong>Nothing installed on the database</strong>: Backups
