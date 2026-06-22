@@ -25,9 +25,9 @@ export function ShowTelegramNotifierComponent({ notifier }: Props) {
         </div>
       )}
 
-      {notifier?.telegramNotifier?.isHttpProxyEnabled && (
+      {notifier?.telegramNotifier?.isProxyEnabled && (
         <div className="mb-1 flex items-center">
-          <div className="min-w-[110px]">HTTP proxy</div>
+          <div className="min-w-[110px]">Proxy</div>
           Enabled
         </div>
       )}

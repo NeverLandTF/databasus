@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -18,13 +17,12 @@ import (
 )
 
 type TelegramNotifier struct {
-	NotifierID         uuid.UUID `json:"notifierId"         gorm:"primaryKey;column:notifier_id"`
-	BotToken           string    `json:"botToken"           gorm:"not null;column:bot_token"`
-	TargetChatID       string    `json:"targetChatId"       gorm:"not null;column:target_chat_id"`
-	ThreadID           *int64    `json:"threadId"           gorm:"column:thread_id"`
-	IsHTTPProxyEnabled bool      `json:"isHttpProxyEnabled" gorm:"column:is_http_proxy_enabled;type:boolean;not null;default:false"`
-	HTTPProxyURL       string    `json:"httpProxyUrl"       gorm:"column:http_proxy_url;type:text"`
-	HasHTTPProxyURL    bool      `json:"hasHttpProxyUrl"    gorm:"-"`
+	NotifierID     uuid.UUID `json:"notifierId"     gorm:"primaryKey;column:notifier_id"`
+	BotToken       string    `json:"botToken"       gorm:"not null;column:bot_token"`
+	TargetChatID   string    `json:"targetChatId"   gorm:"not null;column:target_chat_id"`
+	ThreadID       *int64    `json:"threadId"       gorm:"column:thread_id"`
+	IsProxyEnabled bool      `json:"isProxyEnabled" gorm:"column:is_proxy_enabled;type:boolean;not null;default:false"`
+	ProxyURL       string    `json:"proxyUrl"       gorm:"column:proxy_url;type:text"`
 }
 
 func (t *TelegramNotifier) TableName() string {
@@ -40,19 +38,18 @@ func (t *TelegramNotifier) Validate(encryptor encryption.FieldEncryptor) error {
 		return errors.New("target chat ID is required")
 	}
 
-	if t.IsHTTPProxyEnabled {
-		if t.HTTPProxyURL == "" {
-			return errors.New("HTTP proxy URL is required")
+	if t.IsProxyEnabled {
+		if t.ProxyURL == "" {
+			return errors.New("proxy URL is required")
 		}
 
-		proxyURL, err := encryptor.Decrypt(t.HTTPProxyURL)
+		proxyURL, err := encryptor.Decrypt(t.ProxyURL)
 		if err != nil {
-			return fmt.Errorf("failed to decrypt HTTP proxy URL: %w", err)
+			return fmt.Errorf("failed to decrypt proxy URL: %w", err)
 		}
 
-		parsedProxyURL, err := url.Parse(proxyURL)
-		if err != nil || parsedProxyURL.Scheme != "http" || parsedProxyURL.Host == "" {
-			return errors.New("HTTP proxy URL must be a valid http:// URL")
+		if _, err := parseProxyURL(proxyURL); err != nil {
+			return err
 		}
 	}
 
@@ -118,49 +115,20 @@ func (t *TelegramNotifier) Send(
 	return nil
 }
 
-func (t *TelegramNotifier) buildHTTPClient(
-	encryptor encryption.FieldEncryptor,
-) (*http.Client, error) {
-	client := &http.Client{
-		Timeout: 30 * time.Second,
-	}
-
-	if !t.IsHTTPProxyEnabled {
-		return client, nil
-	}
-
-	proxyURL, err := encryptor.Decrypt(t.HTTPProxyURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decrypt HTTP proxy URL: %w", err)
-	}
-
-	parsedProxyURL, err := url.Parse(proxyURL)
-	if err != nil || parsedProxyURL.Scheme != "http" || parsedProxyURL.Host == "" {
-		return nil, errors.New("HTTP proxy URL must be a valid http:// URL")
-	}
-
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.Proxy = http.ProxyURL(parsedProxyURL)
-	client.Transport = transport
-
-	return client, nil
-}
-
 func (t *TelegramNotifier) HideSensitiveData() {
 	t.BotToken = ""
-	t.HasHTTPProxyURL = t.IsHTTPProxyEnabled && t.HTTPProxyURL != ""
-	t.HTTPProxyURL = ""
+	t.ProxyURL = ""
 }
 
 func (t *TelegramNotifier) Update(incoming *TelegramNotifier) {
 	t.TargetChatID = incoming.TargetChatID
 	t.ThreadID = incoming.ThreadID
-	t.IsHTTPProxyEnabled = incoming.IsHTTPProxyEnabled
+	t.IsProxyEnabled = incoming.IsProxyEnabled
 
-	if !incoming.IsHTTPProxyEnabled {
-		t.HTTPProxyURL = ""
-	} else if incoming.HTTPProxyURL != "" {
-		t.HTTPProxyURL = incoming.HTTPProxyURL
+	if !incoming.IsProxyEnabled {
+		t.ProxyURL = ""
+	} else if incoming.ProxyURL != "" {
+		t.ProxyURL = incoming.ProxyURL
 	}
 
 	if incoming.BotToken != "" {
@@ -177,14 +145,14 @@ func (t *TelegramNotifier) EncryptSensitiveData(encryptor encryption.FieldEncryp
 		t.BotToken = encrypted
 	}
 
-	if !t.IsHTTPProxyEnabled {
-		t.HTTPProxyURL = ""
-	} else if t.HTTPProxyURL != "" {
-		encrypted, err := encryptor.Encrypt(t.HTTPProxyURL)
+	if !t.IsProxyEnabled {
+		t.ProxyURL = ""
+	} else if t.ProxyURL != "" {
+		encrypted, err := encryptor.Encrypt(t.ProxyURL)
 		if err != nil {
-			return fmt.Errorf("failed to encrypt HTTP proxy URL: %w", err)
+			return fmt.Errorf("failed to encrypt proxy URL: %w", err)
 		}
-		t.HTTPProxyURL = encrypted
+		t.ProxyURL = encrypted
 	}
 
 	return nil

@@ -2,9 +2,8 @@ export interface TelegramNotifier {
   botToken: string;
   targetChatId: string;
   threadId?: number;
-  isHttpProxyEnabled?: boolean;
-  httpProxyUrl?: string;
-  hasHttpProxyUrl?: boolean;
+  isProxyEnabled?: boolean;
+  proxyUrl?: string;
 
   // temp field
   isSendToThreadEnabled?: boolean;
