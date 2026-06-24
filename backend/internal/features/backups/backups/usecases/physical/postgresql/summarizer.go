@@ -82,17 +82,29 @@ func CheckSummarizerReadiness(
 		}, nil
 	}
 
-	covered, err := summarizerCoversLSN(ctx, conn, prevStopLSN)
+	window, err := readSummaryWindow(ctx, conn)
 	if err != nil {
 		return SummarizerResult{}, err
 	}
 
-	if !covered {
+	// A parent stop_lsn below the oldest retained summary has aged out for good — no
+	// future summary will ever cover it, so the chain must re-anchor on a fresh FULL.
+	if window.hasAny && prevStopLSN < window.oldestStart {
 		reason := physical_enums.PhysicalBackupErrorSummariesExpired
 
 		return SummarizerResult{
 			Decision: DecisionFullNewChain,
 			Reason:   &reason,
+		}, nil
+	}
+
+	// Summarizer on but nothing produced yet: not expiry, just not ready. Wait for the
+	// first summary rather than mismeasuring lag against a NULL MAX(end_lsn).
+	if !window.hasAny {
+		return SummarizerResult{
+			Decision:  DecisionWait,
+			WaitFor:   waitWindowForCadence(incrementalCadence),
+			PollEvery: summarizerWaitPollInterval,
 		}, nil
 	}
 
@@ -110,10 +122,10 @@ func CheckSummarizerReadiness(
 		return SummarizerResult{}, err
 	}
 
-	// A trailing lag within the active-segment band is the healthy steady
-	// state — go incremental. pg_basebackup --incremental needs summaries only
-	// from prevStopLSN onward (verified above) and waits for the last segment
-	// to be summarized itself.
+	// A trailing lag within the active-segment band is the healthy steady state —
+	// go incremental. prevStopLSN is at or above the oldest retained summary (the
+	// aged-out case bailed above); if it sits in the last unsummarized sliver,
+	// pg_basebackup --incremental waits that segment out itself.
 	if lag < goThreshold {
 		return SummarizerResult{Decision: DecisionGoIncremental}, nil
 	}
@@ -225,26 +237,40 @@ func isSummarizerEnabled(ctx context.Context, conn *pgx.Conn) (bool, error) {
 	return setting == "on", nil
 }
 
-// summarizerCoversLSN returns true when pg_available_wal_summaries reports a
-// summary that contains lsn (start_lsn <= lsn <= end_lsn). Empty result set
-// means the LSN has aged out of the kept window — that's
-// SUMMARIES_EXPIRED.
-func summarizerCoversLSN(ctx context.Context, conn *pgx.Conn, lsn walmath.LSN) (bool, error) {
-	var exists bool
+type summaryWindow struct {
+	// hasAny is false when the summarizer is on but has produced no summary file yet —
+	// just enabled, or idle before the first checkpoint.
+	hasAny      bool
+	oldestStart walmath.LSN
+	newestEnd   walmath.LSN
+}
+
+func readSummaryWindow(ctx context.Context, conn *pgx.Conn) (summaryWindow, error) {
+	var oldestStart, newestEnd *string
 
 	err := conn.QueryRow(ctx, `
-		SELECT EXISTS (
-			SELECT 1
-			FROM pg_available_wal_summaries()
-			WHERE start_lsn <= $1::pg_lsn
-			  AND end_lsn   >= $1::pg_lsn
-		)
-	`, lsn.String()).Scan(&exists)
+		SELECT MIN(start_lsn)::text, MAX(end_lsn)::text
+		FROM pg_available_wal_summaries()
+	`).Scan(&oldestStart, &newestEnd)
 	if err != nil {
-		return false, fmt.Errorf("query pg_available_wal_summaries: %w", err)
+		return summaryWindow{}, fmt.Errorf("read WAL summary window: %w", err)
 	}
 
-	return exists, nil
+	if oldestStart == nil || newestEnd == nil {
+		return summaryWindow{}, nil
+	}
+
+	start, err := walmath.ParseLSN(*oldestStart)
+	if err != nil {
+		return summaryWindow{}, fmt.Errorf("parse oldest summary start_lsn: %w", err)
+	}
+
+	end, err := walmath.ParseLSN(*newestEnd)
+	if err != nil {
+		return summaryWindow{}, fmt.Errorf("parse newest summary end_lsn: %w", err)
+	}
+
+	return summaryWindow{hasAny: true, oldestStart: start, newestEnd: end}, nil
 }
 
 // measureSummarizerLag returns how far the summarizer's coverage trails

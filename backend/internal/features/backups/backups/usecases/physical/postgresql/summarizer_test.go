@@ -46,14 +46,13 @@ func Test_CheckSummarizerReadiness_WhenSummarizerOff_FallsBackToFullNewChain(t *
 	require.Equal(t, physical_enums.PhysicalBackupErrorSummarizerOff, *result.Reason)
 }
 
-// Test_CheckSummarizerReadiness_WhenSummariesDoNotCoverTarget_FallsBackToFullNewChain
-// covers the second WAL-gap fallback: the summarizer is on but no summary covers
-// the parent's stop LSN (the real-world cause is summary-file expiry). An LSN that
-// predates every available summary is, by definition, uncovered — so the check
+// Test_CheckSummarizerReadiness_WhenStopLsnPredatesOldestSummary_FallsBackToFullNewChain
+// covers genuine expiry: the summarizer is on but the parent's stop LSN sits below
+// the oldest retained summary, so no summary can ever cover it again — the check
 // must steer to a fresh FULL and tag it SUMMARIES_EXPIRED. ExpireWalSummaries is
 // applied first so the path mirrors production expiry rather than a synthetic LSN
 // alone.
-func Test_CheckSummarizerReadiness_WhenSummariesDoNotCoverTarget_FallsBackToFullNewChain(t *testing.T) {
+func Test_CheckSummarizerReadiness_WhenStopLsnPredatesOldestSummary_FallsBackToFullNewChain(t *testing.T) {
 	fixture := SetupPhysicalDBForBackup(t)
 	conn := OpenAdminConn(t, fixture)
 
@@ -63,16 +62,51 @@ func Test_CheckSummarizerReadiness_WhenSummariesDoNotCoverTarget_FallsBackToFull
 	require.NoError(t, err)
 	require.True(t, enabled, "the standard fixture runs with summarize_wal on")
 
-	// LSN 0/1 sits before any summary the running cluster can hold, so coverage
-	// is guaranteed false regardless of where the summarizer currently starts.
-	uncoveredTargetLSN := walmath.LSN(1)
+	// LSN 0/1 sits before any summary the running cluster can hold, so it predates
+	// the oldest retained summary regardless of where the summarizer currently starts.
+	expiredTargetLSN := walmath.LSN(1)
 
-	result, err := CheckSummarizerReadiness(context.Background(), conn, uncoveredTargetLSN, time.Hour)
+	result, err := CheckSummarizerReadiness(context.Background(), conn, expiredTargetLSN, time.Hour)
 	require.NoError(t, err)
 
 	require.Equal(t, DecisionFullNewChain, result.Decision)
 	require.NotNil(t, result.Reason)
 	require.Equal(t, physical_enums.PhysicalBackupErrorSummariesExpired, *result.Reason)
+}
+
+// Test_CheckSummarizerReadiness_WhenStopLsnAheadOfSummaries_DoesNotBreakChain is the
+// regression guard for the field report: right after a FULL on a near-idle DB the
+// WAL summarizer trails the FULL's stop_lsn (it never summarizes the active segment).
+// A stop_lsn the summarizer simply hasn't reached yet is NOT expiry — the check must
+// fall through to the lag path (GoIncremental / Wait), never CHAIN_BROKEN the chain
+// with SUMMARIES_EXPIRED. Runs on both PG majors since PG 18 is the reported engine.
+func Test_CheckSummarizerReadiness_WhenStopLsnAheadOfSummaries_DoesNotBreakChain(t *testing.T) {
+	for _, version := range []string{"17", "18"} {
+		t.Run("PostgreSQL "+version, func(t *testing.T) {
+			fixture := SetupPhysicalDBForBackupVersion(t, version)
+			conn := OpenAdminConn(t, fixture)
+
+			ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+			defer cancel()
+
+			// Advance WAL a little so the current tip sits past every flushed summary,
+			// reproducing the "summarizer behind a fresh FULL's stop_lsn" state.
+			_, err := GenerateWalActivity(ctx, conn, 1)
+			require.NoError(t, err)
+
+			var walTipLSN walmath.LSN
+			require.NoError(t, conn.QueryRow(ctx, "SELECT pg_current_wal_lsn()::text").Scan(&walTipLSN))
+
+			result, err := CheckSummarizerReadiness(ctx, conn, walTipLSN, time.Hour)
+			require.NoError(t, err)
+
+			require.NotEqual(t, DecisionFullNewChain, result.Decision,
+				"a stop_lsn the summarizer has not reached yet must not break the chain")
+			require.Nil(t, result.Reason)
+			require.Contains(t,
+				[]SummarizerDecision{DecisionGoIncremental, DecisionWait}, result.Decision)
+		})
+	}
 }
 
 // stubSummarizerCheck installs a scripted readiness probe in place of the live

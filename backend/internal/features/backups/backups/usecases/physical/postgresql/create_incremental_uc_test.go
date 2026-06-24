@@ -88,3 +88,21 @@ func Test_CreateIncremental_WhenSummarizerHealthy_GoesIncremental(t *testing.T) 
 	require.NotNil(t, incrRow.FileName, "a healthy incremental must upload an artifact")
 	require.NotNil(t, incrRow.StopLSN, "a completed incremental must record stop_lsn")
 }
+
+func Test_CreateIncremental_WhenSummarizerBehindOnIdleDB_StillCompletes(t *testing.T) {
+	fixture := postgresql_executor.SetupPhysicalDBForBackup(t)
+
+	backuping_physical.CreateTestPhysicalBackuper(nil).MakeBackup(fixture.BackupID, false)
+	postgresql_executor.WaitForBackupStatus(t, fixture.BackupID, physical_enums.PhysicalBackupTypeFull,
+		physical_enums.PhysicalBackupStatusCompleted, nil, 3*time.Minute)
+
+	incrID := postgresql_executor.BuildAndClaimIncremental(t, fixture, nil)
+
+	backuping_physical.CreateTestPhysicalBackuper(nil).MakeBackup(incrID, false)
+	postgresql_executor.WaitForBackupStatus(t, incrID, physical_enums.PhysicalBackupTypeIncremental,
+		physical_enums.PhysicalBackupStatusCompleted, nil, 3*time.Minute)
+
+	incrRow, err := physical_repositories.GetIncrementalBackupRepository().FindByID(incrID)
+	require.NoError(t, err)
+	require.NotNil(t, incrRow.FileName, "an incremental on an idle DB must still upload an artifact")
+}
