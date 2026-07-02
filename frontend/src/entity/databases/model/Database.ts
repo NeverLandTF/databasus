@@ -1,6 +1,7 @@
 import type { Notifier } from '../../notifiers';
 import type { DatabaseType } from './DatabaseType';
 import type { HealthStatus } from './HealthStatus';
+import type { KingbaseDatabase } from './kingbase/KingbaseDatabase';
 import type { MariadbDatabase } from './mariadb/MariadbDatabase';
 import type { MongodbDatabase } from './mongodb/MongodbDatabase';
 import type { MysqlDatabase } from './mysql/MysqlDatabase';
@@ -15,6 +16,7 @@ export interface Database {
 
   postgresqlLogical?: PostgresqlLogicalDatabase;
   postgresqlPhysical?: PostgresqlPhysicalDatabase;
+  kingbase?: KingbaseDatabase;
   mysql?: MysqlDatabase;
   mariadb?: MariadbDatabase;
   mongodb?: MongodbDatabase;

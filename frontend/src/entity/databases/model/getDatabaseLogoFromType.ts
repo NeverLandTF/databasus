@@ -5,6 +5,8 @@ export const getDatabaseLogoFromType = (type: DatabaseType) => {
     case DatabaseType.POSTGRES_LOGICAL:
     case DatabaseType.POSTGRES_PHYSICAL:
       return '/icons/databases/postgresql.svg';
+    case DatabaseType.KINGBASE:
+      return '/icons/databases/kingbase.svg';
     case DatabaseType.MYSQL:
       return '/icons/databases/mysql.svg';
     case DatabaseType.MARIADB:

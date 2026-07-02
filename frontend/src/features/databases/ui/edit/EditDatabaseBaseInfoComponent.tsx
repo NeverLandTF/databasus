@@ -27,6 +27,7 @@ interface Props {
 // (logical vs physical) is chosen on the next step.
 const databaseEngineOptions = [
   { type: DatabaseType.POSTGRES_LOGICAL, label: 'PostgreSQL' },
+  { type: DatabaseType.KINGBASE, label: 'Kingbase' },
   { type: DatabaseType.MYSQL, label: 'MySQL' },
   { type: DatabaseType.MARIADB, label: 'MariaDB' },
   { type: DatabaseType.MONGODB, label: 'MongoDB' },
