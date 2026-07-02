@@ -1,20 +1,27 @@
 ```
 # Compiled and build artifacts
-*.pyc
-__pycache__/
 *.o
 *.obj
-dist/
-build/
-target/
+*.out
+*.exe
+*.dll
+*.so
+*.a
 
 # Dependencies
-.venv/
-venv/
+vendor/
 node_modules/
-.julia/
-zig*/
-.deps/
+venv/
+.venv/
+__pycache__/
+*.egg-info/
+.Python
+
+# Build directories
+build/
+dist/
+target/
+bin/
 
 # Logs and temp files
 *.log
@@ -25,26 +32,26 @@ zig*/
 # Environment
 .env
 .env.local
-.env.*
+*.env.*
 
 # Editors
 .vscode/
 .idea/
 *.swp
-*.swo
+*~
 
 # OS specific
 .DS_Store
 Thumbs.db
 
-# Testing and coverage
+# Testing
 .coverage
 coverage/
 htmlcov/
-.mypy_cache/
 .pytest_cache/
+.mypy_cache/
 
-# Archives
+# Compression archives
 *.zip
 *.gz
 *.tar
