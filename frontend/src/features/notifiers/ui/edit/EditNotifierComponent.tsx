@@ -47,7 +47,6 @@ export function EditNotifierComponent({
   const [isSaving, setIsSaving] = useState(false);
 
   const [isSendingTestNotification, setIsSendingTestNotification] = useState(false);
-  const [isTestNotificationSuccess, setIsTestNotificationSuccess] = useState(false);
 
   const save = async () => {
     if (!notifier) return;
@@ -72,7 +71,6 @@ export function EditNotifierComponent({
 
     try {
       await notifierApi.sendTestNotificationDirect(notifier);
-      setIsTestNotificationSuccess(true);
       ToastHelper.showToast({
         title: 'Test notification sent!',
         description: 'Test notification sent successfully',
@@ -171,7 +169,6 @@ export function EditNotifierComponent({
   }, [editingNotifier]);
 
   useEffect(() => {
-    setIsTestNotificationSuccess(false);
   }, [notifier]);
 
   const isAllDataFilled = () => {
@@ -261,7 +258,6 @@ export function EditNotifierComponent({
             setNotifier={setNotifier}
             setUnsaved={() => {
               setIsUnsaved(true);
-              setIsTestNotificationSuccess(false);
             }}
           />
         )}
@@ -272,7 +268,6 @@ export function EditNotifierComponent({
             setNotifier={setNotifier}
             setUnsaved={() => {
               setIsUnsaved(true);
-              setIsTestNotificationSuccess(false);
             }}
           />
         )}
@@ -283,7 +278,6 @@ export function EditNotifierComponent({
             setNotifier={setNotifier}
             setUnsaved={() => {
               setIsUnsaved(true);
-              setIsTestNotificationSuccess(false);
             }}
           />
         )}
@@ -294,7 +288,6 @@ export function EditNotifierComponent({
             setNotifier={setNotifier}
             setUnsaved={() => {
               setIsUnsaved(true);
-              setIsTestNotificationSuccess(false);
             }}
           />
         )}
@@ -305,7 +298,6 @@ export function EditNotifierComponent({
             setNotifier={setNotifier}
             setUnsaved={() => {
               setIsUnsaved(true);
-              setIsTestNotificationSuccess(false);
             }}
           />
         )}
@@ -315,7 +307,6 @@ export function EditNotifierComponent({
             setNotifier={setNotifier}
             setUnsaved={() => {
               setIsUnsaved(true);
-              setIsTestNotificationSuccess(false);
             }}
           />
         )}
