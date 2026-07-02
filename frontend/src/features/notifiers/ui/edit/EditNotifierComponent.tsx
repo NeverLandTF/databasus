@@ -322,21 +322,7 @@ export function EditNotifierComponent({
       </div>
 
       <div className="mt-3 flex">
-        {isUnsaved && !isTestNotificationSuccess ? (
-          <Button
-            className="mr-1"
-            disabled={isSendingTestNotification || !isAllDataFilled()}
-            loading={isSendingTestNotification}
-            type="primary"
-            onClick={sendTestNotification}
-          >
-            Send test notification
-          </Button>
-        ) : (
-          <div />
-        )}
-
-        {isUnsaved && isTestNotificationSuccess ? (
+        {isUnsaved && (
           <Button
             className="mr-1"
             disabled={isSaving || !isAllDataFilled()}
@@ -346,9 +332,18 @@ export function EditNotifierComponent({
           >
             Save
           </Button>
-        ) : (
-          <div />
         )}
+
+        <Button
+          className="mr-1"
+          disabled={isSendingTestNotification || !isAllDataFilled()}
+          loading={isSendingTestNotification}
+          type="primary"
+          ghost
+          onClick={sendTestNotification}
+        >
+          Send test notification
+        </Button>
 
         {isShowClose ? (
           <Button
