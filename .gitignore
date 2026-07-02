@@ -1,23 +1,70 @@
-ansible/
-databasus-data/
-.env
-pgdata/
-pgdata-test/
-mysqldata/
-mariadbdata/
-valkey-data/
-victoria-logs-data/
-wal-queue/
-temp/
+```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+dist/
+build/
+target/
+
+# Dependencies
+.venv/
+venv/
 node_modules/
-.idea
-/articles
+.julia/
+zig*/
+.deps/
 
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific
 .DS_Store
-/scripts
-.vscode/settings.json
-.claude
-backend/cleanup_test_db.exe
-plans/
+Thumbs.db
 
-.pnpm-store
+# Testing and coverage
+.coverage
+coverage/
+htmlcov/
+.mypy_cache/
+.pytest_cache/
+
+# Archives
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+```
