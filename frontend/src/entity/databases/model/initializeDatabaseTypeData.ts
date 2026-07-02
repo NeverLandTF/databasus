@@ -1,5 +1,6 @@
 import type { Database } from './Database';
 import { DatabaseType } from './DatabaseType';
+import type { KingbaseDatabase } from './kingbase/KingbaseDatabase';
 import type { MariadbDatabase } from './mariadb/MariadbDatabase';
 import type { MongodbDatabase } from './mongodb/MongodbDatabase';
 import type { MysqlDatabase } from './mysql/MysqlDatabase';
@@ -14,6 +15,7 @@ export const initializeDatabaseTypeData = (database: Database): Database => {
     ...database,
     postgresqlLogical: undefined,
     postgresqlPhysical: undefined,
+    kingbase: undefined,
     mysql: undefined,
     mariadb: undefined,
     mongodb: undefined,
@@ -35,6 +37,12 @@ export const initializeDatabaseTypeData = (database: Database): Database => {
             backupType: PhysicalDatabaseBackupType.FULL,
             sslMode: PostgresSslMode.Disable,
           } as PostgresqlPhysicalDatabase),
+      };
+    case DatabaseType.KINGBASE:
+      return {
+        ...base,
+        kingbase:
+          database.kingbase ?? ({ cpuCount: 1 } as KingbaseDatabase),
       };
     case DatabaseType.MYSQL:
       return { ...base, mysql: database.mysql ?? ({} as MysqlDatabase) };

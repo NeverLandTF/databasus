@@ -1,33 +1,11 @@
 ```
-# Compiled and build artifacts
-*.o
-*.obj
-*.out
-*.exe
-*.dll
-*.so
-*.a
-
 # Dependencies
-vendor/
 node_modules/
-venv/
-.venv/
-__pycache__/
-*.egg-info/
-.Python
 
-# Build directories
-build/
+# Build artifacts
 dist/
-target/
-bin/
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-*.swo
+build/
+*.js.map
 
 # Environment
 .env
@@ -37,21 +15,36 @@ bin/
 # Editors
 .vscode/
 .idea/
-*.swp
-*~
 
-# OS specific
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.egg-info/
+
+# Logs
+*.log
+
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# Testing
-.coverage
+# Coverage
 coverage/
 htmlcov/
-.pytest_cache/
-.mypy_cache/
+.coverage
 
-# Compression archives
+# Testing
+.mypy_cache/
+.pytest_cache/
+.nyc_output/
+coverage/lcov-report/
+
+# Compression
 *.zip
 *.gz
 *.tar
