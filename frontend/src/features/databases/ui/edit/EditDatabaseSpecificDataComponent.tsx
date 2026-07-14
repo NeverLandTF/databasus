@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { type Database, DatabaseType, databaseApi } from '../../../../entity/databases';
 import { CreateReadOnlyComponent } from './CreateReadOnlyComponent';
+import { EditKingbaseSpecificDataComponent } from './EditKingbaseSpecificDataComponent';
 import { EditMariaDbSpecificDataComponent } from './EditMariaDbSpecificDataComponent';
 import { EditMongoDbSpecificDataComponent } from './EditMongoDbSpecificDataComponent';
 import { EditMySqlSpecificDataComponent } from './EditMySqlSpecificDataComponent';
@@ -136,6 +137,8 @@ export const EditDatabaseSpecificDataComponent = ({
           onConnectionErrorChange={onConnectionErrorChange}
         />
       );
+    case DatabaseType.KINGBASE:
+      return <EditKingbaseSpecificDataComponent {...commonProps} />;
     case DatabaseType.MYSQL:
       return <EditMySqlSpecificDataComponent {...commonProps} />;
     case DatabaseType.MARIADB:

@@ -1,4 +1,5 @@
 import { type Database, DatabaseType } from '../../../../entity/databases';
+import { ShowKingbaseSpecificDataComponent } from './ShowKingbaseSpecificDataComponent';
 import { ShowMariaDbSpecificDataComponent } from './ShowMariaDbSpecificDataComponent';
 import { ShowMongoDbSpecificDataComponent } from './ShowMongoDbSpecificDataComponent';
 import { ShowMySqlSpecificDataComponent } from './ShowMySqlSpecificDataComponent';
@@ -15,6 +16,8 @@ export const ShowDatabaseSpecificDataComponent = ({ database }: Props) => {
       return <ShowPostgreSqlLogicalSpecificDataComponent database={database} />;
     case DatabaseType.POSTGRES_PHYSICAL:
       return <ShowPostgreSqlPhysicalSpecificDataComponent database={database} />;
+    case DatabaseType.KINGBASE:
+      return <ShowKingbaseSpecificDataComponent database={database} />;
     case DatabaseType.MYSQL:
       return <ShowMySqlSpecificDataComponent database={database} />;
     case DatabaseType.MARIADB:

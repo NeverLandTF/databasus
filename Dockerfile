@@ -8,7 +8,7 @@ ARG APP_VERSION=dev
 ENV VITE_APP_VERSION=$APP_VERSION
 
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN corepack enable && pnpm install --frozen-lockfile --registry=https://registry.npmmirror.com
 COPY frontend/ ./
 
 # Copy .env file (with fallback to .env.production.example)
