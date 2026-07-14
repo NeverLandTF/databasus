@@ -1,4 +1,1 @@
-(frontend/src/features/databases/ui/edit/EditKingbaseSpecificDataComponent.tsx has extension .tsx which is a source code file)
-(frontend/src/features/notifiers/ui/edit/EditNotifierComponent.tsx has extension .tsx which is a source code file)
-(Only source code files (.tsx) are in the changes, no build artifacts, dependencies, or temp files)
-(nothing to ignore)
+(frontend/src/entity/databases/index.ts is a source file, and there are no build artifacts, dependencies, or temp files in the changes)
